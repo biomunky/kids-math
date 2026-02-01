@@ -1,4 +1,4 @@
-use axum::{routing::{get, post}, Json, Router};
+use axum::{routing::post, Json, Router};
 use chrono::Utc;
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
@@ -16,6 +16,11 @@ struct Question {
     num2: i32,
     operator: String,
     question: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct QuizRequest {
+    username: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -43,12 +48,22 @@ async fn init_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
         r#"
         CREATE TABLE IF NOT EXISTS quiz_sessions (
             id TEXT PRIMARY KEY,
+            username TEXT NOT NULL DEFAULT 'Anonymous',
             created_at TEXT NOT NULL
         )
         "#,
     )
     .execute(pool)
     .await?;
+
+    // Add username column if it doesn't exist (for existing databases)
+    let _ = sqlx::query(
+        r#"
+        ALTER TABLE quiz_sessions ADD COLUMN username TEXT NOT NULL DEFAULT 'Anonymous'
+        "#,
+    )
+    .execute(pool)
+    .await;
 
     sqlx::query(
         r#"
@@ -117,16 +132,22 @@ async fn main() {
     let app = Router::new()
         .route(
             "/api/quiz",
-            get(move || async move {
+            post(move |Json(request): Json<QuizRequest>| async move {
                 let mut rng = StdRng::from_entropy();
                 let mut questions = Vec::new();
                 let session_id = Uuid::new_v4().to_string();
                 let created_at = Utc::now().to_rfc3339();
+                let username = if request.username.trim().is_empty() {
+                    "Anonymous".to_string()
+                } else {
+                    request.username.trim().to_string()
+                };
 
                 // Create session
                 if let Err(e) =
-                    sqlx::query("INSERT INTO quiz_sessions (id, created_at) VALUES (?, ?)")
+                    sqlx::query("INSERT INTO quiz_sessions (id, username, created_at) VALUES (?, ?, ?)")
                         .bind(&session_id)
+                        .bind(&username)
                         .bind(&created_at)
                         .execute(&pool_quiz)
                         .await

@@ -4,20 +4,34 @@ import './App.css'
 const DEMON_ICONS = ['⚔️', '🗡️', '🛡️', '🔮', '⚡']
 
 function App() {
+  const [username, setUsername] = useState('')
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [questions, setQuestions] = useState([])
   const [currentAnswers, setCurrentAnswers] = useState({})
   const [questionResults, setQuestionResults] = useState({})
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [quizSessionId, setQuizSessionId] = useState(null)
 
-  useEffect(() => {
-    fetchQuestions()
-  }, [])
+  const handleLogin = (e) => {
+    e.preventDefault()
+    if (username.trim()) {
+      setIsLoggedIn(true)
+      fetchQuestions()
+    }
+  }
 
   const fetchQuestions = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/quiz')
+      const response = await fetch('http://localhost:3000/api/quiz', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username
+        })
+      })
       const data = await response.json()
       setQuestions(data.questions)
       setQuizSessionId(data.session_id)
@@ -92,6 +106,38 @@ function App() {
     return questions.length > 0 && Object.keys(questionResults).length === questions.length
   }
 
+  if (!isLoggedIn) {
+    return (
+      <div className="app">
+        <div className="login-container">
+          <div className="login-card">
+            <h1 className="login-title">
+              <span className="demon-emoji">👹</span>
+              K-POP DEMON HUNTER
+              <span className="demon-emoji">👹</span>
+            </h1>
+            <p className="login-subtitle">Enter the arena, brave hunter!</p>
+            <form onSubmit={handleLogin} className="login-form">
+              <input
+                type="text"
+                className="username-input"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your hunter name"
+                maxLength={20}
+                required
+                autoFocus
+              />
+              <button type="submit" className="login-btn">
+                ⚔️ BEGIN HUNT ⚔️
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="app">
@@ -112,6 +158,7 @@ function App() {
           <span className="demon-emoji">👹</span>
         </h1>
         <p className="subtitle">Defeat the demons with your math powers!</p>
+        <div className="username-display">Hunter: {username}</div>
         {questions.length > 0 && (
           <div className="score-tracker">
             Score: {getTotalScore()} / {questions.length}

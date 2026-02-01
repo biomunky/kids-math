@@ -391,6 +391,111 @@ body {
   }
 }
 
+/* Login Screen */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.login-card {
+  background: rgba(26, 0, 51, 0.8);
+  border: 3px solid #ff00ff;
+  border-radius: 20px;
+  padding: 3rem;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 0 40px rgba(255, 0, 255, 0.5);
+  animation: scaleIn 0.5s ease-out;
+  text-align: center;
+}
+
+.login-title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.5rem;
+  background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 3s ease infinite;
+  margin-bottom: 1rem;
+  line-height: 1.8;
+}
+
+.login-subtitle {
+  font-size: 1.1rem;
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+  margin-bottom: 2rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.username-input {
+  width: 100%;
+  padding: 1.2rem;
+  font-size: 1.3rem;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #ff00ff;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.username-input:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.username-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 1.5rem;
+  font-size: 1.3rem;
+  font-weight: 900;
+  font-family: 'Press Start 2P', cursive;
+  background: linear-gradient(45deg, #ff00ff, #ff0080);
+  border: none;
+  border-radius: 15px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.login-btn:hover {
+  background: linear-gradient(45deg, #00ffff, #0080ff);
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.7);
+  transform: scale(1.05);
+}
+
+.login-btn:active {
+  transform: scale(0.95);
+}
+
+.username-display {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ff00ff;
+  text-shadow: 0 0 15px rgba(255, 0, 255, 0.8);
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .title {
