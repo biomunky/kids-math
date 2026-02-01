@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
+const DEMON_ICONS = ['⚔️', '🗡️', '🛡️', '🔮', '⚡']
+
 function App() {
   const [questions, setQuestions] = useState([])
-  const [answers, setAnswers] = useState({})
-  const [results, setResults] = useState(null)
+  const [currentAnswers, setCurrentAnswers] = useState({})
+  const [questionResults, setQuestionResults] = useState({})
   const [loading, setLoading] = useState(true)
-  const [score, setScore] = useState(null)
+  const [quizSessionId, setQuizSessionId] = useState(null)
 
   useEffect(() => {
     fetchQuestions()
@@ -18,9 +20,9 @@ function App() {
       const response = await fetch('http://localhost:3000/api/quiz')
       const data = await response.json()
       setQuestions(data.questions)
-      setAnswers({})
-      setResults(null)
-      setScore(null)
+      setQuizSessionId(data.session_id)
+      setCurrentAnswers({})
+      setQuestionResults({})
     } catch (error) {
       console.error('Error fetching questions:', error)
     } finally {
@@ -29,41 +31,65 @@ function App() {
   }
 
   const handleAnswerChange = (id, value) => {
-    setAnswers(prev => ({
+    if (questionResults[id]) return
+
+    setCurrentAnswers(prev => ({
       ...prev,
       [id]: value === '' ? '' : parseInt(value) || 0
     }))
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmitAnswer = async (questionId) => {
+    const answer = currentAnswers[questionId]
+    if (answer === '' || answer === undefined) return
 
-    const formattedAnswers = Object.entries(answers).map(([id, answer]) => ({
-      id: parseInt(id),
-      answer: answer === '' ? 0 : answer
-    }))
+    const question = questions.find(q => q.id === questionId)
 
     try {
-      const response = await fetch('http://localhost:3000/api/check', {
+      const response = await fetch('http://localhost:3000/api/check-answer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          answers: formattedAnswers,
-          questions: questions
+          session_id: quizSessionId,
+          question_id: questionId,
+          answer: answer,
+          question: question
         })
       })
       const data = await response.json()
-      setResults(data.results)
-      setScore(data.score)
+
+      setQuestionResults(prev => ({
+        ...prev,
+        [questionId]: {
+          correct: data.correct,
+          user_answer: answer,
+          correct_answer: data.correct_answer
+        }
+      }))
     } catch (error) {
-      console.error('Error checking answers:', error)
+      console.error('Error checking answer:', error)
+    }
+  }
+
+  const handleKeyPress = (e, questionId) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSubmitAnswer(questionId)
     }
   }
 
   const handleRestart = () => {
     fetchQuestions()
+  }
+
+  const getTotalScore = () => {
+    return Object.values(questionResults).filter(r => r.correct).length
+  }
+
+  const allQuestionsAnswered = () => {
+    return questions.length > 0 && Object.keys(questionResults).length === questions.length
   }
 
   if (loading) {
@@ -86,63 +112,83 @@ function App() {
           <span className="demon-emoji">👹</span>
         </h1>
         <p className="subtitle">Defeat the demons with your math powers!</p>
+        {questions.length > 0 && (
+          <div className="score-tracker">
+            Score: {getTotalScore()} / {questions.length}
+          </div>
+        )}
       </header>
 
-      {!results ? (
-        <form onSubmit={handleSubmit} className="quiz-form">
-          <div className="questions-container">
-            {questions.map((question, index) => (
-              <div key={question.id} className="question-card">
+      <div className="questions-container">
+        {questions.map((question, index) => {
+          const result = questionResults[question.id]
+          const isAnswered = !!result
+
+          return (
+            <div
+              key={question.id}
+              className={`question-card ${isAnswered ? (result.correct ? 'answered-correct' : 'answered-incorrect') : ''}`}
+            >
+              <div className="question-icon">{DEMON_ICONS[index % DEMON_ICONS.length]}</div>
+
+              <div className="question-content">
                 <div className="question-number">Demon #{index + 1}</div>
                 <div className="question-text">{question.question} = ?</div>
-                <input
-                  type="number"
-                  className="answer-input"
-                  value={answers[question.id] || ''}
-                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                  placeholder="Your answer"
-                  required
-                />
-              </div>
-            ))}
-          </div>
-          <button type="submit" className="submit-btn">
-            ⚔️ BANISH THE DEMONS ⚔️
-          </button>
-        </form>
-      ) : (
-        <div className="results-container">
-          <div className="score-display">
-            <h2>Battle Results</h2>
-            <div className="score">
-              {score} / {questions.length} Demons Defeated!
-            </div>
-          </div>
 
-          <div className="results-list">
-            {results.map((result, index) => (
-              <div
-                key={result.id}
-                className={`result-card ${result.correct ? 'correct' : 'incorrect'}`}
-              >
-                <div className="result-icon">
-                  {result.correct ? '✨' : '💀'}
-                </div>
-                <div className="result-details">
-                  <div className="question-info">
-                    Demon #{index + 1}: {questions[result.id].question}
+                {!isAnswered ? (
+                  <div className="answer-section">
+                    <input
+                      type="number"
+                      className="answer-input"
+                      value={currentAnswers[question.id] || ''}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      onKeyPress={(e) => handleKeyPress(e, question.id)}
+                      placeholder="Your answer"
+                    />
+                    <button
+                      type="button"
+                      className="submit-answer-btn"
+                      onClick={() => handleSubmitAnswer(question.id)}
+                      disabled={!currentAnswers[question.id] && currentAnswers[question.id] !== 0}
+                    >
+                      ATTACK!
+                    </button>
                   </div>
-                  <div className="answer-info">
-                    Your answer: {result.user_answer}
-                    {!result.correct && (
-                      <span className="correct-answer">
-                        {' '}(Correct: {result.correct_answer})
-                      </span>
-                    )}
+                ) : (
+                  <div className="result-section">
+                    <div className="result-icon-large">
+                      {result.correct ? '✨' : '💀'}
+                    </div>
+                    <div className="result-message">
+                      {result.correct ? (
+                        <span className="correct-msg">DEMON DEFEATED!</span>
+                      ) : (
+                        <span className="incorrect-msg">
+                          Wrong! The answer was {result.correct_answer}
+                        </span>
+                      )}
+                    </div>
+                    <div className="your-answer">Your answer: {result.user_answer}</div>
                   </div>
-                </div>
+                )}
               </div>
-            ))}
+            </div>
+          )
+        })}
+      </div>
+
+      {allQuestionsAnswered() && (
+        <div className="final-results">
+          <div className="final-score-display">
+            <h2>Battle Complete!</h2>
+            <div className="final-score">
+              {getTotalScore()} / {questions.length} Demons Defeated!
+            </div>
+            <div className="performance-message">
+              {getTotalScore() === questions.length && "Perfect! You're a legendary demon hunter!"}
+              {getTotalScore() >= questions.length * 0.6 && getTotalScore() < questions.length && "Great job! Keep training!"}
+              {getTotalScore() < questions.length * 0.6 && "Keep practicing! You'll get stronger!"}
+            </div>
           </div>
 
           <button onClick={handleRestart} className="restart-btn">
