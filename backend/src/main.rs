@@ -21,6 +21,7 @@ struct Question {
 #[derive(Debug, Serialize, Deserialize)]
 struct QuizRequest {
     username: String,
+    difficulty: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -49,6 +50,7 @@ async fn init_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
         CREATE TABLE IF NOT EXISTS quiz_sessions (
             id TEXT PRIMARY KEY,
             username TEXT NOT NULL DEFAULT 'Anonymous',
+            difficulty TEXT NOT NULL DEFAULT 'medium',
             created_at TEXT NOT NULL
         )
         "#,
@@ -60,6 +62,15 @@ async fn init_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     let _ = sqlx::query(
         r#"
         ALTER TABLE quiz_sessions ADD COLUMN username TEXT NOT NULL DEFAULT 'Anonymous'
+        "#,
+    )
+    .execute(pool)
+    .await;
+
+    // Add difficulty column if it doesn't exist (for existing databases)
+    let _ = sqlx::query(
+        r#"
+        ALTER TABLE quiz_sessions ADD COLUMN difficulty TEXT NOT NULL DEFAULT 'medium'
         "#,
     )
     .execute(pool)
@@ -142,12 +153,18 @@ async fn main() {
                 } else {
                     request.username.trim().to_string()
                 };
+                let difficulty = if request.difficulty.trim().is_empty() {
+                    "medium".to_string()
+                } else {
+                    request.difficulty.trim().to_lowercase()
+                };
 
                 // Create session
                 if let Err(e) =
-                    sqlx::query("INSERT INTO quiz_sessions (id, username, created_at) VALUES (?, ?, ?)")
+                    sqlx::query("INSERT INTO quiz_sessions (id, username, difficulty, created_at) VALUES (?, ?, ?, ?)")
                         .bind(&session_id)
                         .bind(&username)
+                        .bind(&difficulty)
                         .bind(&created_at)
                         .execute(&pool_quiz)
                         .await
@@ -155,23 +172,37 @@ async fn main() {
                     eprintln!("Error creating session: {}", e);
                 }
 
-                for i in 0..5 {
-                    let num1 = rng.gen_range(0..=100);
-                    let num2 = rng.gen_range(0..=100);
-                    let operator = if rng.gen_bool(0.5) { "+" } else { "-" };
+                // Define difficulty parameters - all difficulties now use +/- with results 0-10
+                let max_operand = match difficulty.as_str() {
+                    "easy" => 10,    // numbers up to 10
+                    "hard" => 50,    // numbers up to 50
+                    _ => 20,         // medium: numbers up to 20
+                };
 
-                    let (n1, n2) = if operator == "-" && num2 > num1 {
-                        (num2, num1)
+                for i in 0..5 {
+                    // Always use + or - operators
+                    let operators = vec!["+", "-"];
+                    let operator = operators[rng.gen_range(0..operators.len())];
+
+                    // Generate a result between 0 and 10
+                    let correct_answer = rng.gen_range(0..=10);
+
+                    // Generate operands that will produce this result
+                    let (n1, n2) = if operator == "+" {
+                        // For addition: num1 + num2 = result
+                        // Pick num1 between 0 and result, then num2 = result - num1
+                        let num1 = rng.gen_range(0..=correct_answer);
+                        let num2 = correct_answer - num1;
+                        (num1, num2)
                     } else {
+                        // For subtraction: num1 - num2 = result
+                        // Pick num2 between 0 and max_operand, then num1 = result + num2
+                        let num2 = rng.gen_range(0..=max_operand);
+                        let num1 = correct_answer + num2;
                         (num1, num2)
                     };
 
                     let question_text = format!("{} {} {}", n1, operator, n2);
-                    let correct_answer = match operator {
-                        "+" => n1 + n2,
-                        "-" => n1 - n2,
-                        _ => 0,
-                    };
 
                     // Save question to database
                     if let Err(e) = sqlx::query(
@@ -215,6 +246,8 @@ async fn main() {
                 let correct_answer = match payload.question.operator.as_str() {
                     "+" => payload.question.num1 + payload.question.num2,
                     "-" => payload.question.num1 - payload.question.num2,
+                    "*" => payload.question.num1 * payload.question.num2,
+                    "/" => payload.question.num1 / payload.question.num2,
                     _ => 0,
                 };
 

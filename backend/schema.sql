@@ -1,6 +1,8 @@
 -- Quiz Sessions Table
 CREATE TABLE IF NOT EXISTS quiz_sessions (
     id TEXT PRIMARY KEY,
+    username TEXT NOT NULL DEFAULT 'Anonymous',
+    difficulty TEXT NOT NULL DEFAULT 'medium',
     created_at TEXT NOT NULL
 );
 
