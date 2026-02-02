@@ -212,7 +212,7 @@ function App() {
                     onClick={() => setDifficulty('easy')}
                   >
                     🌟 Easy
-                    <span className="difficulty-desc">(numbers up to 10)</span>
+                    <span className="difficulty-desc">(+/- up to 20)</span>
                   </button>
                   <button
                     type="button"
@@ -220,7 +220,7 @@ function App() {
                     onClick={() => setDifficulty('medium')}
                   >
                     ⚡ Medium
-                    <span className="difficulty-desc">(numbers up to 20)</span>
+                    <span className="difficulty-desc">(+/- up to 100, times tables)</span>
                   </button>
                   <button
                     type="button"
@@ -228,7 +228,7 @@ function App() {
                     onClick={() => setDifficulty('hard')}
                   >
                     🔥 Hard
-                    <span className="difficulty-desc">(numbers up to 50)</span>
+                    <span className="difficulty-desc">(all ops up to 1000)</span>
                   </button>
                 </div>
               </div>
@@ -360,7 +360,7 @@ function App() {
                 onClick={() => setDifficulty('easy')}
               >
                 🌟 Easy
-                <span className="difficulty-desc">(numbers up to 10)</span>
+                <span className="difficulty-desc">(+/- up to 20)</span>
               </button>
               <button
                 type="button"
@@ -368,7 +368,7 @@ function App() {
                 onClick={() => setDifficulty('medium')}
               >
                 ⚡ Medium
-                <span className="difficulty-desc">(numbers up to 20)</span>
+                <span className="difficulty-desc">(+/- up to 100, times tables)</span>
               </button>
               <button
                 type="button"
@@ -376,7 +376,7 @@ function App() {
                 onClick={() => setDifficulty('hard')}
               >
                 🔥 Hard
-                <span className="difficulty-desc">(numbers up to 50)</span>
+                <span className="difficulty-desc">(all ops up to 1000)</span>
               </button>
             </div>
           </div>

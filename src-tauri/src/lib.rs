@@ -133,29 +133,65 @@ async fn generate_quiz(
     }
 
     // Define difficulty parameters
-    let max_operand = match difficulty.as_str() {
-        "easy" => 10,
-        "hard" => 50,
-        _ => 20,
+    let (operators, max_num) = match difficulty.as_str() {
+        "easy" => (vec!["+", "-"], 20),
+        "hard" => (vec!["+", "-", "*", "/"], 1000),
+        _ => (vec!["+", "-", "*"], 100),
     };
 
     for i in 0..5 {
-        // Always use + or - operators
-        let operators = vec!["+", "-"];
         let operator = operators[rng.gen_range(0..operators.len())];
 
-        // Generate a result between 0 and 10
-        let correct_answer = rng.gen_range(0..=10);
-
-        // Generate operands that will produce this result
-        let (n1, n2) = if operator == "+" {
-            let num1 = rng.gen_range(0..=correct_answer);
-            let num2 = correct_answer - num1;
-            (num1, num2)
-        } else {
-            let num2 = rng.gen_range(0..=max_operand);
-            let num1 = correct_answer + num2;
-            (num1, num2)
+        let (n1, n2, correct_answer) = match operator {
+            "+" => {
+                if difficulty == "easy" {
+                    let num1 = rng.gen_range(0..=max_num);
+                    let remaining = max_num - num1;
+                    let num2 = rng.gen_range(0..=remaining);
+                    let result = num1 + num2;
+                    (num1, num2, result)
+                } else {
+                    let num1 = rng.gen_range(0..=max_num);
+                    let remaining = max_num - num1;
+                    let num2 = rng.gen_range(0..=remaining);
+                    let result = num1 + num2;
+                    (num1, num2, result)
+                }
+            }
+            "-" => {
+                if difficulty == "easy" {
+                    let num1 = rng.gen_range(0..=max_num);
+                    let num2 = rng.gen_range(0..=num1);
+                    let result = num1 - num2;
+                    (num1, num2, result)
+                } else {
+                    let result = rng.gen_range(0..=max_num);
+                    let num2 = rng.gen_range(0..=max_num);
+                    let num1 = result + num2;
+                    (num1, num2, result)
+                }
+            }
+            "*" => {
+                if difficulty == "medium" {
+                    let tables = vec![2, 3, 4, 5, 10];
+                    let multiplier = tables[rng.gen_range(0..tables.len())];
+                    let other = rng.gen_range(1..=12);
+                    let result = multiplier * other;
+                    (multiplier, other, result)
+                } else {
+                    let num1 = rng.gen_range(2..=31);
+                    let num2 = rng.gen_range(2..=31);
+                    let result = num1 * num2;
+                    (num1, num2, result)
+                }
+            }
+            "/" => {
+                let divisor = rng.gen_range(2..=20);
+                let quotient = rng.gen_range(2..=50);
+                let dividend = divisor * quotient;
+                (dividend, divisor, quotient)
+            }
+            _ => (0, 0, 0),
         };
 
         let question_text = format!("{} {} {}", n1, operator, n2);
