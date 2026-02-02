@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { invoke } from '@tauri-apps/api/core'
 import './App.css'
 
 const DEMON_ICONS = ['⚔️', '🗡️', '🛡️', '🔮', '⚡']
@@ -26,17 +27,10 @@ function App() {
   const fetchQuestions = async () => {
     setLoading(true)
     try {
-      const response = await fetch('http://localhost:3000/api/quiz', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          difficulty: difficulty
-        })
+      const data = await invoke('generate_quiz', {
+        username: username,
+        difficulty: difficulty
       })
-      const data = await response.json()
       setQuestions(data.questions)
       setQuizSessionId(data.session_id)
       setCurrentAnswers({})
@@ -64,19 +58,12 @@ function App() {
     const question = questions.find(q => q.id === questionId)
 
     try {
-      const response = await fetch('http://localhost:3000/api/check-answer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          session_id: quizSessionId,
-          question_id: questionId,
-          answer: answer,
-          question: question
-        })
+      const data = await invoke('check_answer', {
+        sessionId: quizSessionId,
+        questionId: questionId,
+        answer: answer,
+        question: question
       })
-      const data = await response.json()
 
       setQuestionResults(prev => ({
         ...prev,

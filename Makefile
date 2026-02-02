@@ -1,9 +1,15 @@
-.PHONY: help install build-backend dev-backend dev-frontend dev stop clean
+.PHONY: help install build-backend dev-backend dev-frontend dev stop clean tauri-dev tauri-build tauri-clean
 
 # Default target
 help:
 	@echo "Math Hunter - Available Commands:"
 	@echo ""
+	@echo "=== TAURI APP (NEW) ==="
+	@echo "  make tauri-dev      - Run Tauri app in development mode"
+	@echo "  make tauri-build    - Build Tauri app for production"
+	@echo "  make tauri-clean    - Clean Tauri build artifacts"
+	@echo ""
+	@echo "=== LEGACY WEB APP ==="
 	@echo "  make install        - Install all dependencies (backend + frontend)"
 	@echo "  make build-backend  - Build the Rust backend"
 	@echo "  make dev-backend    - Start the backend server"
@@ -70,3 +76,26 @@ clean:
 	cd backend && cargo clean
 	cd frontend && rm -rf dist node_modules/.vite
 	@echo "✅ Cleaned!"
+
+# ==== TAURI COMMANDS ====
+
+# Run Tauri app in development mode
+tauri-dev:
+	@echo "🚀 Starting Tauri app in development mode..."
+	@echo "📊 Database will be created in app data directory"
+	@echo "🎮 Application window will open automatically"
+	@echo ""
+	cargo tauri dev
+
+# Build Tauri app for production
+tauri-build:
+	@echo "🔨 Building Tauri app for production..."
+	cargo tauri build
+	@echo "✅ Build complete! Check src-tauri/target/release/bundle/"
+
+# Clean Tauri artifacts
+tauri-clean:
+	@echo "🧹 Cleaning Tauri build artifacts..."
+	rm -rf src-tauri/target
+	rm -rf frontend/dist
+	@echo "✅ Tauri artifacts cleaned!"
