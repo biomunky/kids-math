@@ -1,6 +1,42 @@
-import { useState, useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { useState } from 'react'
 import './App.css'
+
+const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
+// --- API helpers -----------------------------------------------------------
+async function generateQuiz(username, difficulty) {
+  if (isTauri) {
+    const { invoke } = await import('@tauri-apps/api/core')
+    return invoke('generate_quiz', { username, difficulty })
+  }
+  const res = await fetch('/api/quiz', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, difficulty }),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return res.json()
+}
+
+async function checkAnswer(sessionId, questionId, answer, question) {
+  if (isTauri) {
+    const { invoke } = await import('@tauri-apps/api/core')
+    return invoke('check_answer', { sessionId, questionId, answer, question })
+  }
+  const res = await fetch('/api/check-answer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      session_id: sessionId,
+      question_id: questionId,
+      answer,
+      question,
+    }),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return res.json()
+}
+// ---------------------------------------------------------------------------
 
 const DEMON_ICONS = ['⚔️', '🗡️', '🛡️', '🔮', '⚡']
 
@@ -27,10 +63,7 @@ function App() {
   const fetchQuestions = async () => {
     setLoading(true)
     try {
-      const data = await invoke('generate_quiz', {
-        username: username,
-        difficulty: difficulty
-      })
+      const data = await generateQuiz(username, difficulty)
       setQuestions(data.questions)
       setQuizSessionId(data.session_id)
       setCurrentAnswers({})
@@ -58,12 +91,7 @@ function App() {
     const question = questions.find(q => q.id === questionId)
 
     try {
-      const data = await invoke('check_answer', {
-        sessionId: quizSessionId,
-        questionId: questionId,
-        answer: answer,
-        question: question
-      })
+      const data = await checkAnswer(quizSessionId, questionId, answer, question)
 
       setQuestionResults(prev => ({
         ...prev,
