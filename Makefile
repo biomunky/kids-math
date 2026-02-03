@@ -1,4 +1,4 @@
-.PHONY: help install build-backend dev-backend dev-frontend dev stop clean tauri-dev tauri-build tauri-clean
+.PHONY: help installdeps build-backend dev-backend dev-frontend dev stop clean tauri-dev tauri-build tauri-clean
 
 # Default target
 help:
@@ -10,7 +10,7 @@ help:
 	@echo "  make tauri-clean    - Clean Tauri build artifacts"
 	@echo ""
 	@echo "=== LEGACY WEB APP ==="
-	@echo "  make install        - Install all dependencies (backend + frontend)"
+	@echo "  make installdeps        - installdeps all dependencies (backend + frontend)"
 	@echo "  make build-backend  - Build the Rust backend"
 	@echo "  make dev-backend    - Start the backend server"
 	@echo "  make dev-frontend   - Start the frontend dev server"
@@ -20,11 +20,11 @@ help:
 	@echo "  make dashboard      - Start the dashboard"
 	@echo ""
 
-# Install dependencies
-install:
-	@echo "📦 Installing backend dependencies..."
+# installdeps dependencies
+installdeps:
+	@echo "📦 installing backend dependencies..."
 	cd backend && cargo build
-	@echo "📦 Installing frontend dependencies..."
+	@echo "📦 installing frontend dependencies..."
 	cd frontend && npm install
 	@echo "✅ All dependencies installed!"
 
