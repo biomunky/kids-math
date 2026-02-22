@@ -300,7 +300,7 @@ function App() {
                     <input
                       type="number"
                       className="answer-input"
-                      value={currentAnswers[question.id] || ''}
+                      value={currentAnswers[question.id] ?? ''}
                       onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                       onKeyPress={(e) => handleKeyPress(e, question.id)}
                       placeholder="Your answer"
