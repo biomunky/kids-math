@@ -1,4 +1,4 @@
-use axum::{routing::post, Json, Router};
+use axum::{routing::{get, post}, Json, Router};
 use chrono::Utc;
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
@@ -42,6 +42,14 @@ struct CheckAnswerRequest {
 struct CheckAnswerResponse {
     correct: bool,
     correct_answer: i32,
+}
+
+#[derive(Debug, Serialize, sqlx::FromRow)]
+struct UserStat {
+    username: String,
+    difficulty: String,
+    total_questions: i64,
+    correct_answers: i64,
 }
 
 async fn init_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
@@ -139,6 +147,7 @@ async fn main() {
     // Clone pool for use in closures
     let pool_quiz = pool.clone();
     let pool_answer = pool.clone();
+    let pool_stats = pool.clone();
 
     let app = Router::new()
         .route(
@@ -309,6 +318,31 @@ async fn main() {
                     correct: is_correct,
                     correct_answer,
                 })
+            }),
+        )
+        .route(
+            "/api/stats",
+            get(move || async move {
+                let stats = sqlx::query_as::<_, UserStat>(
+                    r#"
+                    SELECT
+                        qs.username,
+                        qs.difficulty,
+                        COUNT(a.id) as total_questions,
+                        COALESCE(SUM(a.is_correct), 0) as correct_answers
+                    FROM answers a
+                    JOIN quiz_sessions qs ON a.session_id = qs.id
+                    GROUP BY qs.username, qs.difficulty
+                    ORDER BY qs.username, qs.difficulty
+                    "#,
+                )
+                .fetch_all(&pool_stats)
+                .await
+                .unwrap_or_else(|e| {
+                    eprintln!("Error fetching stats: {}", e);
+                    vec![]
+                });
+                Json(stats)
             }),
         )
         .layer(cors);

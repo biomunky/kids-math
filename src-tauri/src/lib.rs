@@ -28,6 +28,14 @@ struct CheckAnswerResponse {
     correct_answer: i32,
 }
 
+#[derive(Debug, Serialize, sqlx::FromRow)]
+struct UserStat {
+    username: String,
+    difficulty: String,
+    total_questions: i64,
+    correct_answers: i64,
+}
+
 async fn init_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     sqlx::query(
         r#"
@@ -277,6 +285,26 @@ async fn check_answer(
     })
 }
 
+#[tauri::command]
+async fn get_stats(db: State<'_, SqlitePool>) -> Result<Vec<UserStat>, String> {
+    sqlx::query_as::<_, UserStat>(
+        r#"
+        SELECT
+            qs.username,
+            qs.difficulty,
+            COUNT(a.id) as total_questions,
+            COALESCE(SUM(a.is_correct), 0) as correct_answers
+        FROM answers a
+        JOIN quiz_sessions qs ON a.session_id = qs.id
+        GROUP BY qs.username, qs.difficulty
+        ORDER BY qs.username, qs.difficulty
+        "#,
+    )
+    .fetch_all(db.inner())
+    .await
+    .map_err(|e| format!("Failed to fetch stats: {}", e))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -327,7 +355,7 @@ pub fn run() {
             }
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![generate_quiz, check_answer])
+        .invoke_handler(tauri::generate_handler![generate_quiz, check_answer, get_stats])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
