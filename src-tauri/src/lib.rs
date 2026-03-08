@@ -113,6 +113,7 @@ async fn generate_quiz(
 ) -> Result<QuizResponse, String> {
     let mut rng = StdRng::from_entropy();
     let mut questions = Vec::new();
+    let mut seen: std::collections::HashSet<(i32, i32, String)> = std::collections::HashSet::new();
     let session_id = Uuid::new_v4().to_string();
     let created_at = Utc::now().to_rfc3339();
     let username = if username.trim().is_empty() {
@@ -147,7 +148,8 @@ async fn generate_quiz(
         _ => (vec!["+", "-", "*"], 100),
     };
 
-    for i in 0..5 {
+    let mut i = 0;
+    while i < 10 {
         let operator = operators[rng.gen_range(0..operators.len())];
 
         let (n1, n2, correct_answer) = match operator {
@@ -202,6 +204,12 @@ async fn generate_quiz(
             _ => (0, 0, 0),
         };
 
+        let key = (n1, n2, operator.to_string());
+        if seen.contains(&key) {
+            continue;
+        }
+        seen.insert(key);
+
         let question_text = format!("{} {} {}", n1, operator, n2);
 
         // Save question to database
@@ -232,6 +240,7 @@ async fn generate_quiz(
             operator: operator.to_string(),
             question: question_text,
         });
+        i += 1;
     }
 
     Ok(QuizResponse {
