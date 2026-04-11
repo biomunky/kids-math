@@ -1497,3 +1497,211 @@ body {
 .restart-btn-secondary {
   background: var(--poke-light-blue) !important;
 }
+
+/* ============================================================
+   Pokédex entry click + Pokémon card modal
+   ============================================================ */
+.dex-clickable {
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.dex-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--poke-ink);
+}
+.dex-clickable:focus-visible {
+  outline: 3px solid var(--poke-blue);
+  outline-offset: 2px;
+}
+
+.pokemon-card {
+  max-width: 520px;
+  border-top: 16px solid var(--card-type-color, #888);
+}
+.pokemon-card-header h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+.card-dex-num {
+  font-size: 0.85rem;
+  color: #777;
+  font-family: 'Press Start 2P', cursive;
+}
+.pokemon-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.card-hero {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--card-type-color, #888) 0%, #fff 120%);
+  border: 3px solid var(--poke-ink);
+  border-radius: 14px;
+  box-shadow: 0 3px 0 var(--poke-ink);
+}
+.card-hero-sprite {
+  width: 110px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 14px;
+  border: 2px solid var(--poke-ink);
+  flex-shrink: 0;
+}
+.card-hero-sprite img {
+  max-width: 96px;
+  max-height: 96px;
+  image-rendering: pixelated;
+  transform: scale(1.6);
+  transform-origin: center;
+}
+.card-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+.card-caught-badge {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--poke-red);
+  color: #fff;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.7rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 2px solid var(--poke-ink);
+}
+.card-types {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.type-badge {
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 2px solid var(--poke-ink);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+}
+.card-measurements {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.3rem;
+}
+.card-measurements > div {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.4rem 0.7rem;
+  border-radius: 10px;
+  border: 2px solid var(--poke-ink);
+  font-size: 0.85rem;
+}
+.card-measurements span {
+  font-size: 0.7rem;
+  color: #555;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.card-measurements strong {
+  font-weight: 800;
+}
+
+.card-section {
+  background: #fff;
+  border: 3px solid var(--poke-ink);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 3px 0 var(--poke-ink);
+}
+.card-section-title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.75rem;
+  color: var(--poke-blue);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px dashed var(--poke-ink);
+}
+
+.card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.card-stat-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 40px;
+  gap: 0.6rem;
+  align-items: center;
+}
+.card-stat-label {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.card-stat-bar-wrap {
+  height: 12px;
+  background: #eee;
+  border: 2px solid var(--poke-ink);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.card-stat-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--poke-green), var(--poke-yellow));
+  transition: width 0.4s ease-out;
+}
+.card-stat-value {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.card-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.card-pill {
+  background: #f0f0f0;
+  border: 2px solid var(--poke-ink);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.card-pill.hidden-ability {
+  background: #fff0f0;
+  font-style: italic;
+}
+.card-pill.card-move {
+  background: #eef3ff;
+}
+
+.card-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+.card-error {
+  padding: 1rem;
+  background: #ffecec;
+  border: 3px solid var(--poke-red);
+  border-radius: 12px;
+  color: #9b1818;
+  font-weight: 600;
+  text-align: center;
+}

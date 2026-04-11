@@ -109,6 +109,58 @@ function suggestNextDifficulty(current, correct, total) {
   return { next: current, direction: 'same' }
 }
 
+const DETAILS_KEY_PREFIX = 'math-hunter-details-v1-'
+
+const TYPE_COLORS = {
+  normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C',
+  grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1',
+  ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A',
+  rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746',
+  steel: '#B7B7CE', fairy: '#D685AD',
+}
+
+const STAT_LABELS = {
+  'hp': 'HP',
+  'attack': 'Attack',
+  'defense': 'Defense',
+  'special-attack': 'Sp. Atk',
+  'special-defense': 'Sp. Def',
+  'speed': 'Speed',
+}
+
+function prettify(str) {
+  return str.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+}
+
+async function fetchPokemonDetails(id) {
+  const cacheKey = DETAILS_KEY_PREFIX + id
+  try {
+    const cached = localStorage.getItem(cacheKey)
+    if (cached) return JSON.parse(cached)
+  } catch { /* ignore */ }
+
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+  if (!res.ok) throw new Error(`PokeAPI HTTP ${res.status}`)
+  const data = await res.json()
+
+  const condensed = {
+    id: data.id,
+    name: data.name,
+    height: data.height,
+    weight: data.weight,
+    types: data.types.map(t => t.type.name),
+    abilities: data.abilities.map(a => ({ name: a.ability.name, hidden: a.is_hidden })),
+    stats: data.stats.map(s => ({ name: s.stat.name, value: s.base_stat })),
+    moves: data.moves.slice(0, 8).map(m => m.move.name),
+  }
+
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify(condensed))
+  } catch { /* ignore */ }
+
+  return condensed
+}
+
 const CATCHES_KEY_PREFIX = 'math-hunter-catches-v1-'
 
 function loadCatches(username) {
@@ -166,6 +218,10 @@ function App() {
   const [reviewFeedback, setReviewFeedback] = useState(null)
   const [adaptiveNotice, setAdaptiveNotice] = useState(null)
   const [catches, setCatches] = useState({})
+  const [selectedPokemonId, setSelectedPokemonId] = useState(null)
+  const [detailsCache, setDetailsCache] = useState({})
+  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [detailsError, setDetailsError] = useState(null)
 
   useEffect(() => {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ }
@@ -308,6 +364,26 @@ function App() {
 
   const toggleSetting = (key) => {
     setSettings(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleOpenPokemonCard = async (id) => {
+    setSelectedPokemonId(id)
+    setDetailsError(null)
+    if (detailsCache[id]) return
+    setDetailsLoading(true)
+    try {
+      const details = await fetchPokemonDetails(id)
+      setDetailsCache(prev => ({ ...prev, [id]: details }))
+    } catch (err) {
+      setDetailsError(err.message ?? 'Failed to load Pokémon data')
+    } finally {
+      setDetailsLoading(false)
+    }
+  }
+
+  const handleClosePokemonCard = () => {
+    setSelectedPokemonId(null)
+    setDetailsError(null)
   }
 
   const handleSwitchUser = () => {
@@ -505,7 +581,11 @@ function App() {
             return (
               <div
                 key={pokemon.id}
-                className={`dex-entry ${caught ? 'dex-caught' : 'dex-uncaught'}`}
+                className={`dex-entry ${caught ? 'dex-caught dex-clickable' : 'dex-uncaught'}`}
+                onClick={caught ? () => handleOpenPokemonCard(pokemon.id) : undefined}
+                role={caught ? 'button' : undefined}
+                tabIndex={caught ? 0 : undefined}
+                onKeyDown={caught ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpenPokemonCard(pokemon.id) } } : undefined}
               >
                 <div className="dex-image-wrap">
                   {caught ? (
@@ -971,6 +1051,114 @@ function App() {
           </div>
         </div>
       )}
+
+      {selectedPokemonId != null && (() => {
+        const sprite = POKEMON_BY_ID[selectedPokemonId]
+        const details = detailsCache[selectedPokemonId]
+        const count = catches[selectedPokemonId] ?? 0
+        const primaryType = details?.types?.[0] ?? 'normal'
+        const cardBg = TYPE_COLORS[primaryType] ?? '#A8A77A'
+        return (
+          <div className="modal-overlay" onClick={handleClosePokemonCard}>
+            <div
+              className="modal-content pokemon-card"
+              onClick={(e) => e.stopPropagation()}
+              style={{ '--card-type-color': cardBg }}
+            >
+              <div className="modal-header pokemon-card-header">
+                <h2>
+                  {sprite?.name ?? `#${selectedPokemonId}`}
+                  <span className="card-dex-num">#{String(selectedPokemonId).padStart(3, '0')}</span>
+                </h2>
+                <button className="modal-close-btn" onClick={handleClosePokemonCard}>✕</button>
+              </div>
+              <div className="modal-body pokemon-card-body">
+                <div className="card-hero">
+                  <div className="card-hero-sprite">
+                    {sprite && <img src={sprite.src} alt={sprite.name} />}
+                  </div>
+                  <div className="card-hero-meta">
+                    <div className="card-caught-badge">Caught ×{count}</div>
+                    {details?.types && (
+                      <div className="card-types">
+                        {details.types.map(t => (
+                          <span key={t} className="type-badge" style={{ background: TYPE_COLORS[t] ?? '#888' }}>
+                            {prettify(t)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {details && (
+                      <div className="card-measurements">
+                        <div><span>Height</span><strong>{(details.height / 10).toFixed(1)} m</strong></div>
+                        <div><span>Weight</span><strong>{(details.weight / 10).toFixed(1)} kg</strong></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {detailsLoading && !details && (
+                  <div className="card-loading">
+                    <img src={ballPoke} alt="" className="spin-ball" />
+                    <p>Reading Pokédex entry...</p>
+                  </div>
+                )}
+                {detailsError && !details && (
+                  <div className="card-error">
+                    Couldn't reach the Pokédex network. Check your connection and try again.
+                  </div>
+                )}
+
+                {details && (
+                  <>
+                    <div className="card-section">
+                      <div className="card-section-title">Base Stats</div>
+                      <div className="card-stats">
+                        {details.stats.map(stat => (
+                          <div key={stat.name} className="card-stat-row">
+                            <span className="card-stat-label">{STAT_LABELS[stat.name] ?? prettify(stat.name)}</span>
+                            <div className="card-stat-bar-wrap">
+                              <div
+                                className="card-stat-bar"
+                                style={{ width: `${Math.min(100, (stat.value / 200) * 100)}%` }}
+                              />
+                            </div>
+                            <span className="card-stat-value">{stat.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {details.abilities?.length > 0 && (
+                      <div className="card-section">
+                        <div className="card-section-title">Abilities</div>
+                        <div className="card-pills">
+                          {details.abilities.map(a => (
+                            <span key={a.name} className={`card-pill ${a.hidden ? 'hidden-ability' : ''}`}>
+                              {prettify(a.name)}{a.hidden ? ' (hidden)' : ''}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {details.moves?.length > 0 && (
+                      <div className="card-section">
+                        <div className="card-section-title">Known Moves</div>
+                        <div className="card-pills">
+                          {details.moves.map(m => (
+                            <span key={m} className="card-pill card-move">{prettify(m)}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
