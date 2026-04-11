@@ -5,6 +5,11 @@ import ballPoke from './assets/pokemon/ball_poke.png'
 import ballGreat from './assets/pokemon/ball_great.png'
 import ballUltra from './assets/pokemon/ball_ultra.png'
 import ballMaster from './assets/pokemon/ball_master.png'
+import ballNet from './assets/pokemon/ball_net.png'
+import ballSafari from './assets/pokemon/ball_safari.png'
+import ballHeal from './assets/pokemon/ball_heal.png'
+import ballPremier from './assets/pokemon/ball_premier.png'
+import pokemonNamesData from './pokemonNames.json'
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
@@ -53,33 +58,21 @@ async function getStats() {
 }
 // ---------------------------------------------------------------------------
 
-const POKEMON_NAMES = {
-  1: 'Bulbasaur', 3: 'Venusaur', 4: 'Charmander', 6: 'Charizard', 7: 'Squirtle',
-  9: 'Blastoise', 12: 'Butterfree', 16: 'Pidgey', 19: 'Rattata', 25: 'Pikachu',
-  26: 'Raichu', 27: 'Sandshrew', 35: 'Clefairy', 37: 'Vulpix', 39: 'Jigglypuff',
-  50: 'Diglett', 52: 'Meowth', 54: 'Psyduck', 58: 'Growlithe', 60: 'Poliwag',
-  63: 'Abra', 66: 'Machop', 70: 'Weepinbell', 74: 'Geodude', 77: 'Ponyta',
-  79: 'Slowpoke', 81: 'Magnemite', 86: 'Seel', 87: 'Dewgong', 90: 'Shellder',
-  92: 'Gastly', 94: 'Gengar', 95: 'Onix', 98: 'Krabby', 102: 'Exeggcute',
-  104: 'Cubone', 108: 'Lickitung', 113: 'Chansey', 115: 'Kangaskhan', 120: 'Staryu',
-  122: 'Mr. Mime', 125: 'Electabuzz', 129: 'Magikarp', 131: 'Lapras', 133: 'Eevee',
-  135: 'Jolteon', 143: 'Snorlax', 147: 'Dratini', 150: 'Mewtwo', 151: 'Mew',
-  152: 'Chikorita', 155: 'Cyndaquil', 158: 'Totodile', 161: 'Sentret', 163: 'Hoothoot',
-  172: 'Pichu', 175: 'Togepi', 179: 'Mareep', 183: 'Marill', 190: 'Aipom',
-  196: 'Espeon', 197: 'Umbreon', 200: 'Misdreavus', 201: 'Unown', 215: 'Sneasel',
-  225: 'Delibird', 228: 'Houndour', 249: 'Lugia', 251: 'Celebi', 252: 'Treecko',
-  255: 'Torchic', 258: 'Mudkip', 280: 'Ralts', 282: 'Gardevoir', 300: 'Skitty',
-  302: 'Sableye', 359: 'Absol', 384: 'Rayquaza', 447: 'Riolu', 448: 'Lucario',
-  470: 'Leafeon', 471: 'Glaceon', 493: 'Arceus', 494: 'Victini', 570: 'Zorua',
-  571: 'Zoroark', 613: 'Cubchoo',
-}
+const POKEMON_NAMES = Object.fromEntries(
+  Object.entries(pokemonNamesData).map(([k, v]) => [parseInt(k, 10), v])
+)
+
+const BALL_SPRITES = [ballPoke, ballGreat, ballUltra, ballMaster, ballNet, ballSafari, ballHeal, ballPremier]
 
 const spriteModules = import.meta.glob('./assets/pokemon/poke_*.gif', { eager: true, import: 'default' })
 const POKEMON_SPRITES = Object.entries(spriteModules)
   .map(([path, src]) => {
     const id = parseInt(path.match(/poke_(\d+)\.gif/)[1], 10)
-    return { name: POKEMON_NAMES[id] ?? `Pokémon #${id}`, src }
+    return { id, name: POKEMON_NAMES[id] ?? `Pokémon #${id}`, src }
   })
+  .sort((a, b) => a.id - b.id)
+
+const POKEMON_BY_ID = Object.fromEntries(POKEMON_SPRITES.map(p => [p.id, p]))
 
 function shuffle(arr) {
   const a = [...arr]
@@ -114,6 +107,27 @@ function suggestNextDifficulty(current, correct, total) {
     return { next: DIFFICULTY_ORDER[idx - 1], direction: 'down' }
   }
   return { next: current, direction: 'same' }
+}
+
+const CATCHES_KEY_PREFIX = 'math-hunter-catches-v1-'
+
+function loadCatches(username) {
+  if (!username) return {}
+  try {
+    const raw = localStorage.getItem(CATCHES_KEY_PREFIX + username)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    return typeof parsed === 'object' && parsed ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+function saveCatches(username, catches) {
+  if (!username) return
+  try {
+    localStorage.setItem(CATCHES_KEY_PREFIX + username, JSON.stringify(catches))
+  } catch { /* ignore */ }
 }
 
 const SETTINGS_KEY = 'math-hunter-settings-v1'
@@ -151,6 +165,7 @@ function App() {
   const [reviewAnswer, setReviewAnswer] = useState('')
   const [reviewFeedback, setReviewFeedback] = useState(null)
   const [adaptiveNotice, setAdaptiveNotice] = useState(null)
+  const [catches, setCatches] = useState({})
 
   useEffect(() => {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ }
@@ -158,8 +173,10 @@ function App() {
 
   const handleLogin = (e) => {
     e.preventDefault()
-    if (username.trim()) {
+    const trimmed = username.trim()
+    if (trimmed) {
       setIsLoggedIn(true)
+      setCatches(loadCatches(trimmed))
       fetchQuestions()
     }
   }
@@ -211,6 +228,18 @@ function App() {
           correct_answer: data.correct_answer
         }
       }))
+
+      if (data.correct) {
+        const idx = questions.findIndex(q => q.id === questionId)
+        const sprite = idx >= 0 ? quizSprites[idx] : null
+        if (sprite?.id != null) {
+          setCatches(prev => {
+            const next = { ...prev, [sprite.id]: (prev[sprite.id] ?? 0) + 1 }
+            saveCatches(username.trim(), next)
+            return next
+          })
+        }
+      }
     } catch (error) {
       console.error('Error checking answer:', error)
     }
@@ -283,6 +312,7 @@ function App() {
     setActiveTab('play')
     setAdaptiveNotice(null)
     setReviewMode(false)
+    setCatches({})
   }
 
   const getTotalScore = () => {
@@ -375,54 +405,120 @@ function App() {
     }
   }
 
-  const renderStats = () => (
-    <div className="stats-container">
-      <h2 className="stats-title">Trainer Pokédex</h2>
-      {statsLoading ? (
-        <div className="stats-loading">
-          <img src={ballPoke} alt="pokeball" className="spin-ball" />
-          <p>Loading records...</p>
+  const renderStats = () => {
+    if (!isLoggedIn) {
+      return (
+        <div className="stats-container">
+          <h2 className="stats-title">Pokédex</h2>
+          <div className="stats-empty">
+            Log in as a trainer to see your Pokédex!
+          </div>
         </div>
-      ) : stats.length === 0 ? (
-        <div className="stats-empty">
-          No records yet. Catch 'em all to build your legend!
+      )
+    }
+
+    const trimmedUser = username.trim()
+    const userStats = stats.filter(s => s.username === trimmedUser)
+    const byDifficulty = { easy: null, medium: null, hard: null }
+    for (const s of userStats) {
+      if (s.difficulty in byDifficulty) byDifficulty[s.difficulty] = s
+    }
+    const totalQuestions = userStats.reduce((sum, s) => sum + s.total_questions, 0)
+    const totalCorrect = userStats.reduce((sum, s) => sum + s.correct_answers, 0)
+    const totalWrong = totalQuestions - totalCorrect
+
+    const caughtCount = Object.values(catches).filter(n => n > 0).length
+    const totalPokemon = POKEMON_SPRITES.length
+
+    return (
+      <div className="stats-container pokedex-container">
+        <div className="pokedex-header">
+          <h2 className="stats-title">{trimmedUser}'s Pokédex</h2>
+          <div className="pokedex-summary">
+            <div className="summary-pill">
+              <span className="summary-label">Total Questions</span>
+              <span className="summary-value">{totalQuestions}</span>
+            </div>
+            <div className="summary-pill summary-correct">
+              <span className="summary-label">Correct</span>
+              <span className="summary-value">{totalCorrect}</span>
+            </div>
+            <div className="summary-pill summary-wrong">
+              <span className="summary-label">Wrong</span>
+              <span className="summary-value">{totalWrong}</span>
+            </div>
+            <div className="summary-pill summary-caught">
+              <span className="summary-label">Caught</span>
+              <span className="summary-value">{caughtCount} / {totalPokemon}</span>
+            </div>
+          </div>
+
+          <div className="difficulty-stats-row">
+            {DIFFICULTY_ORDER.map(diff => {
+              const s = byDifficulty[diff]
+              const total = s?.total_questions ?? 0
+              const right = s?.correct_answers ?? 0
+              const wrong = total - right
+              const accuracy = total > 0 ? Math.round((right / total) * 100) : 0
+              return (
+                <div key={diff} className={`difficulty-card difficulty-${diff}`}>
+                  <div className="difficulty-card-title">{DIFFICULTY_LABELS[diff]}</div>
+                  <div className="difficulty-card-row">
+                    <span>Questions</span><strong>{total}</strong>
+                  </div>
+                  <div className="difficulty-card-row">
+                    <span>Right</span><strong className="correct-cell">{right}</strong>
+                  </div>
+                  <div className="difficulty-card-row">
+                    <span>Wrong</span><strong className="wrong-cell">{wrong}</strong>
+                  </div>
+                  <div className="difficulty-card-row">
+                    <span>Accuracy</span><strong>{accuracy}%</strong>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
-      ) : (
-        <table className="stats-table">
-          <thead>
-            <tr>
-              <th>Trainer</th>
-              <th>Level</th>
-              <th>Questions</th>
-              <th>Correct</th>
-              <th>Wrong</th>
-              <th>Accuracy</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats.map((stat, i) => (
-              <tr key={i}>
-                <td className="hunter-cell">{stat.username}</td>
-                <td>
-                  <span className={`difficulty-badge difficulty-${stat.difficulty}`}>
-                    {stat.difficulty.charAt(0).toUpperCase() + stat.difficulty.slice(1)}
-                  </span>
-                </td>
-                <td>{stat.total_questions}</td>
-                <td className="correct-cell">{stat.correct_answers}</td>
-                <td className="wrong-cell">{stat.total_questions - stat.correct_answers}</td>
-                <td className="accuracy-cell">
-                  {stat.total_questions > 0
-                    ? Math.round(stat.correct_answers / stat.total_questions * 100)
-                    : 0}%
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
-  )
+
+        {statsLoading && (
+          <div className="stats-loading">
+            <img src={ballPoke} alt="pokeball" className="spin-ball" />
+            <p>Loading records...</p>
+          </div>
+        )}
+
+        <div className="pokedex-grid">
+          {POKEMON_SPRITES.map(pokemon => {
+            const count = catches[pokemon.id] ?? 0
+            const caught = count > 0
+            const placeholderBall = BALL_SPRITES[pokemon.id % BALL_SPRITES.length]
+            return (
+              <div
+                key={pokemon.id}
+                className={`dex-entry ${caught ? 'dex-caught' : 'dex-uncaught'}`}
+              >
+                <div className="dex-image-wrap">
+                  {caught ? (
+                    <img src={pokemon.src} alt={pokemon.name} className="dex-sprite" />
+                  ) : (
+                    <img src={placeholderBall} alt="unseen" className="dex-ball" />
+                  )}
+                  {caught && count > 0 && (
+                    <span className="dex-count">×{count}</span>
+                  )}
+                </div>
+                <div className="dex-number">#{String(pokemon.id).padStart(3, '0')}</div>
+                <div className="dex-name">
+                  {caught ? pokemon.name : '???'}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
 
   const renderPlay = () => {
     if (!isLoggedIn) {

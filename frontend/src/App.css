@@ -1269,3 +1269,160 @@ body {
   font-size: 1.15rem;
   line-height: 1.8;
 }
+
+/* ============================================================
+   Pokédex (per-user) page
+   ============================================================ */
+.pokedex-container {
+  max-width: 100%;
+}
+.pokedex-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.pokedex-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1rem 0 1.5rem;
+}
+.summary-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: 3px solid var(--poke-ink);
+  border-radius: 14px;
+  box-shadow: 0 3px 0 var(--poke-ink);
+}
+.summary-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #666;
+}
+.summary-value {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.1rem;
+  color: var(--poke-blue);
+  margin-top: 0.35rem;
+}
+.summary-correct .summary-value { color: var(--poke-green); }
+.summary-wrong .summary-value { color: var(--poke-red); }
+.summary-caught .summary-value { color: var(--poke-gold); }
+
+.difficulty-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.difficulty-card {
+  background: #fff;
+  border: 3px solid var(--poke-ink);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 4px 0 var(--poke-ink);
+  text-align: left;
+}
+.difficulty-card.difficulty-easy { background: #eaf7ff; }
+.difficulty-card.difficulty-medium { background: #fff6d9; }
+.difficulty-card.difficulty-hard { background: #ffe3e3; }
+.difficulty-card-title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px dashed var(--poke-ink);
+  color: var(--poke-ink);
+}
+.difficulty-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.difficulty-card-row strong {
+  font-weight: 800;
+}
+
+.pokedex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.dex-entry {
+  background: #fff;
+  border: 3px solid var(--poke-ink);
+  border-radius: 12px;
+  padding: 0.5rem;
+  text-align: center;
+  box-shadow: 0 3px 0 var(--poke-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 140px;
+}
+.dex-entry.dex-caught {
+  background: #fffaf0;
+}
+.dex-entry.dex-uncaught {
+  background: #eef0f2;
+  opacity: 0.85;
+}
+.dex-image-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dex-sprite {
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: pixelated;
+}
+.dex-ball {
+  max-width: 60%;
+  max-height: 60%;
+  filter: grayscale(0.6) opacity(0.7);
+}
+.dex-count {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--poke-red);
+  color: #fff;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.65rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 999px;
+  border: 2px solid var(--poke-ink);
+  box-shadow: 0 2px 0 var(--poke-ink);
+}
+.dex-number {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.6rem;
+  color: #888;
+}
+.dex-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  min-height: 1.8em;
+  word-break: break-word;
+}
+.dex-uncaught .dex-name {
+  color: #888;
+  letter-spacing: 0.1em;
+}
