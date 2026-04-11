@@ -75,13 +75,13 @@ def load_data():
 
 # Page configuration
 st.set_page_config(
-    page_title="K-POP DEMON HUNTER Dashboard",
+    page_title="Math Trainer Dashboard",
     page_icon="🎯",
     layout="wide"
 )
 
 # Title
-st.title("🎯 K-POP DEMON HUNTER Analytics Dashboard")
+st.title("⚪ Math Trainer - Pokémon Edition Analytics Dashboard")
 st.markdown("---")
 
 # Load data
@@ -481,7 +481,7 @@ try:
                         st.dataframe(question_details_df, use_container_width=True, hide_index=True)
 
     else:
-        st.info("No data available yet. Start playing the K-POP DEMON HUNTER quiz to see analytics!")
+        st.info("No data available yet. Start playing the Math Trainer quiz to see analytics!")
 
 except Exception as e:
     st.error(f"Error loading data: {str(e)}")

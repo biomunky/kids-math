@@ -1,10 +1,10 @@
-# K-POP DEMON HUNTER - Math Learning App
+# Math Trainer - Pokémon Edition
 
-A K-pop demon hunter themed educational application that teaches children addition and subtraction through an interactive quiz interface. Built with React and Rust.
+A Pokémon-themed educational application that teaches children addition and subtraction (and more!) through an interactive quiz interface. Built with React and Rust.
 
 ## Features
 
-- **K-pop demon hunter themed UI** with neon colors, animations, and demon hunting icons (⚔️, 🗡️, 🛡️, 🔮, ⚡)
+- **Pokémon themed UI** with bright colors, bouncy Poké Balls, and friendly Pokémon sprites (Pikachu, Charmander, Squirtle, Bulbasaur, and friends)
 - **Immediate feedback** - Get instant results after answering each question
 - **5 randomly generated math questions** per quiz session
 - **Addition and subtraction** problems with numbers ranging from 0-100
@@ -92,12 +92,12 @@ The frontend will typically start on `http://localhost:5173` (Vite will show you
 ## How to Play
 
 1. Open the frontend URL in your web browser
-2. You'll see 5 math questions (addition and subtraction), each with a demon hunting icon
-3. Answer each question one at a time by typing your answer and clicking "ATTACK!"
-4. Get **immediate feedback** - the question card will turn green (correct) or red (incorrect)
-5. See your running score at the top of the page
-6. After answering all 5 questions, view your final score and performance message
-7. Click "SUMMON NEW DEMONS" to start a new quiz session
+2. You'll see math questions, each featuring a wild Pokémon
+3. Answer each question by typing your answer and clicking "THROW BALL!"
+4. Get **immediate feedback** - the question card will turn green (caught!) or red (broke free)
+5. See your running catch count at the top of the page
+6. After answering all questions, view your final score and performance message
+7. Click "FIND NEW POKÉMON" to start a new quiz session
 
 ## API Endpoints
 
@@ -195,18 +195,17 @@ math-hunter/
 
 ## Theme Elements
 
-- **Colors**: Dark purple/black background with neon pink, cyan, and purple accents
-- **Fonts**: Press Start 2P for headings/buttons, Orbitron for body text
-- **Icons**: Demon hunting themed emojis (sword, shield, crystal ball, lightning)
+- **Colors**: Bright Pokémon palette — red, yellow, blue, and cream with bold black outlines
+- **Fonts**: Press Start 2P for headings/buttons, Fredoka for body text
+- **Sprites**: Pokémon face icons (Pikachu, Charmander, Squirtle, Bulbasaur, Rattata, Jigglypuff, Eevee, Meowth) and Poké Balls (Poké / Great / Ultra / Master)
 - **Animations**:
-  - Gradient shifts on title
-  - Bouncing demon emojis
-  - Floating weapon icons
-  - Glowing effects on hover
-  - Shimmer effects on question cards
+  - Bouncing Poké Balls on the title
+  - Floating Pokémon sprites on question cards
+  - Spinning Poké Ball loader
+  - Chunky "press-down" button animations
   - Scale-in animations for results
-- **Styling**: Retro gaming/anime/K-pop inspired with demon hunter aesthetics
-- **Feedback**: Green glow for correct answers, red glow for incorrect
+- **Styling**: Chunky cartoon look inspired by classic Pokémon UIs
+- **Feedback**: Green card for caught, red card for missed
 
 ## Development
 

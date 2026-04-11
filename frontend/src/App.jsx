@@ -1,6 +1,19 @@
 import { useState } from 'react'
 import './App.css'
 
+import pikachu from './assets/pokemon/pikachu.png'
+import charmander from './assets/pokemon/charmander.png'
+import squirtle from './assets/pokemon/squirtle.png'
+import bulbasaur from './assets/pokemon/bulbasaur.png'
+import rattata from './assets/pokemon/rattata.png'
+import jigglypuff from './assets/pokemon/jigglypuff.png'
+import eevee from './assets/pokemon/eevee.png'
+import meowth from './assets/pokemon/meowth.png'
+import ballPoke from './assets/pokemon/ball_poke.png'
+import ballGreat from './assets/pokemon/ball_great.png'
+import ballUltra from './assets/pokemon/ball_ultra.png'
+import ballMaster from './assets/pokemon/ball_master.png'
+
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
 // --- API helpers -----------------------------------------------------------
@@ -48,7 +61,16 @@ async function getStats() {
 }
 // ---------------------------------------------------------------------------
 
-const DEMON_ICONS = ['⚔️', '🗡️', '🛡️', '🔮', '⚡']
+const POKEMON_SPRITES = [
+  { name: 'Pikachu', src: pikachu },
+  { name: 'Charmander', src: charmander },
+  { name: 'Squirtle', src: squirtle },
+  { name: 'Bulbasaur', src: bulbasaur },
+  { name: 'Rattata', src: rattata },
+  { name: 'Jigglypuff', src: jigglypuff },
+  { name: 'Eevee', src: eevee },
+  { name: 'Meowth', src: meowth },
+]
 
 function App() {
   const [username, setUsername] = useState('')
@@ -211,21 +233,21 @@ function App() {
 
   const renderStats = () => (
     <div className="stats-container">
-      <h2 className="stats-title">Hunter Records</h2>
+      <h2 className="stats-title">Trainer Pokédex</h2>
       {statsLoading ? (
         <div className="stats-loading">
-          <div className="demon-icon">👹</div>
+          <img src={ballPoke} alt="pokeball" className="spin-ball" />
           <p>Loading records...</p>
         </div>
       ) : stats.length === 0 ? (
         <div className="stats-empty">
-          No records yet. Start playing to build your legend!
+          No records yet. Catch 'em all to build your legend!
         </div>
       ) : (
         <table className="stats-table">
           <thead>
             <tr>
-              <th>Hunter</th>
+              <th>Trainer</th>
               <th>Level</th>
               <th>Questions</th>
               <th>Correct</th>
@@ -264,31 +286,32 @@ function App() {
         <div className="login-container">
           <div className="login-card">
             <h1 className="login-title">
-              <span className="demon-emoji">👹</span>
-              K-POP DEMON HUNTER
-              <span className="demon-emoji">👹</span>
+              <img src={ballPoke} alt="pokeball" className="title-ball" />
+              MATH TRAINER
+              <img src={ballPoke} alt="pokeball" className="title-ball" />
             </h1>
-            <p className="login-subtitle">Enter the arena, brave hunter!</p>
+            <p className="login-subtitle">Gotta solve 'em all!</p>
             <form onSubmit={handleLogin} className="login-form">
               <input
                 type="text"
                 className="username-input"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your hunter name"
+                placeholder="Enter your trainer name"
                 maxLength={20}
                 required
                 autoFocus
               />
               <div className="difficulty-selector">
-                <label className="difficulty-label">Choose your difficulty:</label>
+                <label className="difficulty-label">Choose your badge:</label>
                 <div className="difficulty-buttons">
                   <button
                     type="button"
                     className={`difficulty-btn ${difficulty === 'easy' ? 'selected' : ''}`}
                     onClick={() => setDifficulty('easy')}
                   >
-                    🌟 Easy
+                    <img src={ballPoke} alt="" className="badge-ball" />
+                    Poké Ball
                     <span className="difficulty-desc">(+/- up to 20)</span>
                   </button>
                   <button
@@ -296,21 +319,23 @@ function App() {
                     className={`difficulty-btn ${difficulty === 'medium' ? 'selected' : ''}`}
                     onClick={() => setDifficulty('medium')}
                   >
-                    ⚡ Medium
-                    <span className="difficulty-desc">(+/- up to 100, times tables)</span>
+                    <img src={ballGreat} alt="" className="badge-ball" />
+                    Great Ball
+                    <span className="difficulty-desc">(+/- up to 100, ×)</span>
                   </button>
                   <button
                     type="button"
                     className={`difficulty-btn ${difficulty === 'hard' ? 'selected' : ''}`}
                     onClick={() => setDifficulty('hard')}
                   >
-                    🔥 Hard
+                    <img src={ballUltra} alt="" className="badge-ball" />
+                    Ultra Ball
                     <span className="difficulty-desc">(all ops up to 1000)</span>
                   </button>
                 </div>
               </div>
               <button type="submit" className="login-btn">
-                ⚔️ BEGIN HUNT ⚔️
+                START JOURNEY
               </button>
             </form>
           </div>
@@ -321,8 +346,8 @@ function App() {
     if (loading) {
       return (
         <div className="loading">
-          <div className="demon-icon">👹</div>
-          <h2>Summoning Math Demons...</h2>
+          <img src={ballPoke} alt="pokeball" className="spin-ball-large" />
+          <h2>A wild Pokémon appears...</h2>
         </div>
       )
     }
@@ -331,15 +356,15 @@ function App() {
       <>
         <header className="header">
           <h1 className="title">
-            <span className="demon-emoji">👹</span>
-            K-POP DEMON HUNTER
-            <span className="demon-emoji">👹</span>
+            <img src={ballPoke} alt="pokeball" className="title-ball" />
+            MATH TRAINER
+            <img src={ballPoke} alt="pokeball" className="title-ball" />
           </h1>
-          <p className="subtitle">Defeat the demons with your math powers!</p>
-          <div className="username-display">Hunter: {username}</div>
+          <p className="subtitle">Battle Pokémon with your math powers!</p>
+          <div className="username-display">Trainer: {username}</div>
           {questions.length > 0 && (
             <div className="score-tracker">
-              Score: {getTotalScore()} / {questions.length}
+              Caught: {getTotalScore()} / {questions.length}
             </div>
           )}
         </header>
@@ -348,17 +373,20 @@ function App() {
           {questions.map((question, index) => {
             const result = questionResults[question.id]
             const isAnswered = !!result
+            const sprite = POKEMON_SPRITES[index % POKEMON_SPRITES.length]
 
             return (
               <div
                 key={question.id}
                 className={`question-card ${isAnswered ? (result.correct ? 'answered-correct' : 'answered-incorrect') : ''}`}
               >
-                <div className="question-icon">{DEMON_ICONS[index % DEMON_ICONS.length]}</div>
+                <div className="question-icon">
+                  <img src={sprite.src} alt={sprite.name} className="pokemon-sprite" />
+                </div>
 
                 <div className="question-content">
                   <div className="question-header">
-                    <div className="question-number">Demon #{index + 1}</div>
+                    <div className="question-number">Wild {sprite.name}</div>
                     <button
                       className="help-btn"
                       onClick={() => handleShowHelp(question.operator)}
@@ -385,20 +413,22 @@ function App() {
                         onClick={() => handleSubmitAnswer(question.id)}
                         disabled={!currentAnswers[question.id] && currentAnswers[question.id] !== 0}
                       >
-                        ATTACK!
+                        THROW BALL!
                       </button>
                     </div>
                   ) : (
                     <div className="result-section">
                       <div className="result-icon-large">
-                        {result.correct ? '✨' : '💀'}
+                        {result.correct
+                          ? <img src={ballPoke} alt="caught" className="result-ball" />
+                          : <img src={ballPoke} alt="miss" className="result-ball faded" />}
                       </div>
                       <div className="result-message">
                         {result.correct ? (
-                          <span className="correct-msg">DEMON DEFEATED!</span>
+                          <span className="correct-msg">Gotcha! {sprite.name} was caught!</span>
                         ) : (
                           <span className="incorrect-msg">
-                            Wrong! The answer was {result.correct_answer}
+                            Oh no! It broke free. Answer was {result.correct_answer}
                           </span>
                         )}
                       </div>
@@ -416,24 +446,25 @@ function App() {
             <div className="final-score-display">
               <h2>Battle Complete!</h2>
               <div className="final-score">
-                {getTotalScore()} / {questions.length} Demons Defeated!
+                {getTotalScore()} / {questions.length} Pokémon Caught!
               </div>
               <div className="performance-message">
-                {getTotalScore() === questions.length && "Perfect! You're a legendary demon hunter!"}
-                {getTotalScore() >= questions.length * 0.6 && getTotalScore() < questions.length && "Great job! Keep training!"}
-                {getTotalScore() < questions.length * 0.6 && "Keep practicing! You'll get stronger!"}
+                {getTotalScore() === questions.length && "You're a Pokémon Master!"}
+                {getTotalScore() >= questions.length * 0.6 && getTotalScore() < questions.length && "Great job, Trainer! Keep training!"}
+                {getTotalScore() < questions.length * 0.6 && "Keep practicing at the Pokémon Center!"}
               </div>
             </div>
 
             <div className="restart-difficulty-section">
-              <label className="restart-difficulty-label">Choose difficulty for next round:</label>
+              <label className="restart-difficulty-label">Choose ball type for next battle:</label>
               <div className="restart-difficulty-buttons">
                 <button
                   type="button"
                   className={`restart-difficulty-btn ${difficulty === 'easy' ? 'selected' : ''}`}
                   onClick={() => setDifficulty('easy')}
                 >
-                  🌟 Easy
+                  <img src={ballPoke} alt="" className="badge-ball" />
+                  Poké Ball
                   <span className="difficulty-desc">(+/- up to 20)</span>
                 </button>
                 <button
@@ -441,22 +472,24 @@ function App() {
                   className={`restart-difficulty-btn ${difficulty === 'medium' ? 'selected' : ''}`}
                   onClick={() => setDifficulty('medium')}
                 >
-                  ⚡ Medium
-                  <span className="difficulty-desc">(+/- up to 100, times tables)</span>
+                  <img src={ballGreat} alt="" className="badge-ball" />
+                  Great Ball
+                  <span className="difficulty-desc">(+/- up to 100, ×)</span>
                 </button>
                 <button
                   type="button"
                   className={`restart-difficulty-btn ${difficulty === 'hard' ? 'selected' : ''}`}
                   onClick={() => setDifficulty('hard')}
                 >
-                  🔥 Hard
+                  <img src={ballUltra} alt="" className="badge-ball" />
+                  Ultra Ball
                   <span className="difficulty-desc">(all ops up to 1000)</span>
                 </button>
               </div>
             </div>
 
             <button onClick={handleRestart} className="restart-btn">
-              🔄 SUMMON NEW DEMONS 🔄
+              FIND NEW POKÉMON
             </button>
           </div>
         )}
@@ -471,13 +504,13 @@ function App() {
           className={`tab-btn ${activeTab === 'play' ? 'active' : ''}`}
           onClick={() => handleTabChange('play')}
         >
-          ⚔️ Play
+          <img src={ballPoke} alt="" className="tab-ball" /> Play
         </button>
         <button
           className={`tab-btn ${activeTab === 'stats' ? 'active' : ''}`}
           onClick={() => handleTabChange('stats')}
         >
-          📊 Stats
+          <img src={ballMaster} alt="" className="tab-ball" /> Pokédex
         </button>
       </div>
 
