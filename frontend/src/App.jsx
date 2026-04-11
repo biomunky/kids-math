@@ -1,14 +1,6 @@
 import { useState } from 'react'
 import './App.css'
 
-import pikachu from './assets/pokemon/pikachu.png'
-import charmander from './assets/pokemon/charmander.png'
-import squirtle from './assets/pokemon/squirtle.png'
-import bulbasaur from './assets/pokemon/bulbasaur.png'
-import rattata from './assets/pokemon/rattata.png'
-import jigglypuff from './assets/pokemon/jigglypuff.png'
-import eevee from './assets/pokemon/eevee.png'
-import meowth from './assets/pokemon/meowth.png'
 import ballPoke from './assets/pokemon/ball_poke.png'
 import ballGreat from './assets/pokemon/ball_great.png'
 import ballUltra from './assets/pokemon/ball_ultra.png'
@@ -61,16 +53,42 @@ async function getStats() {
 }
 // ---------------------------------------------------------------------------
 
-const POKEMON_SPRITES = [
-  { name: 'Pikachu', src: pikachu },
-  { name: 'Charmander', src: charmander },
-  { name: 'Squirtle', src: squirtle },
-  { name: 'Bulbasaur', src: bulbasaur },
-  { name: 'Rattata', src: rattata },
-  { name: 'Jigglypuff', src: jigglypuff },
-  { name: 'Eevee', src: eevee },
-  { name: 'Meowth', src: meowth },
-]
+const POKEMON_NAMES = {
+  1: 'Bulbasaur', 3: 'Venusaur', 4: 'Charmander', 6: 'Charizard', 7: 'Squirtle',
+  9: 'Blastoise', 12: 'Butterfree', 16: 'Pidgey', 19: 'Rattata', 25: 'Pikachu',
+  26: 'Raichu', 27: 'Sandshrew', 35: 'Clefairy', 37: 'Vulpix', 39: 'Jigglypuff',
+  50: 'Diglett', 52: 'Meowth', 54: 'Psyduck', 58: 'Growlithe', 60: 'Poliwag',
+  63: 'Abra', 66: 'Machop', 70: 'Weepinbell', 74: 'Geodude', 77: 'Ponyta',
+  79: 'Slowpoke', 81: 'Magnemite', 86: 'Seel', 87: 'Dewgong', 90: 'Shellder',
+  92: 'Gastly', 94: 'Gengar', 95: 'Onix', 98: 'Krabby', 102: 'Exeggcute',
+  104: 'Cubone', 108: 'Lickitung', 113: 'Chansey', 115: 'Kangaskhan', 120: 'Staryu',
+  122: 'Mr. Mime', 125: 'Electabuzz', 129: 'Magikarp', 131: 'Lapras', 133: 'Eevee',
+  135: 'Jolteon', 143: 'Snorlax', 147: 'Dratini', 150: 'Mewtwo', 151: 'Mew',
+  152: 'Chikorita', 155: 'Cyndaquil', 158: 'Totodile', 161: 'Sentret', 163: 'Hoothoot',
+  172: 'Pichu', 175: 'Togepi', 179: 'Mareep', 183: 'Marill', 190: 'Aipom',
+  196: 'Espeon', 197: 'Umbreon', 200: 'Misdreavus', 201: 'Unown', 215: 'Sneasel',
+  225: 'Delibird', 228: 'Houndour', 249: 'Lugia', 251: 'Celebi', 252: 'Treecko',
+  255: 'Torchic', 258: 'Mudkip', 280: 'Ralts', 282: 'Gardevoir', 300: 'Skitty',
+  302: 'Sableye', 359: 'Absol', 384: 'Rayquaza', 447: 'Riolu', 448: 'Lucario',
+  470: 'Leafeon', 471: 'Glaceon', 493: 'Arceus', 494: 'Victini', 570: 'Zorua',
+  571: 'Zoroark', 613: 'Cubchoo',
+}
+
+const spriteModules = import.meta.glob('./assets/pokemon/poke_*.gif', { eager: true, import: 'default' })
+const POKEMON_SPRITES = Object.entries(spriteModules)
+  .map(([path, src]) => {
+    const id = parseInt(path.match(/poke_(\d+)\.gif/)[1], 10)
+    return { name: POKEMON_NAMES[id] ?? `Pokémon #${id}`, src }
+  })
+
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 function App() {
   const [username, setUsername] = useState('')
@@ -86,6 +104,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('play')
   const [stats, setStats] = useState([])
   const [statsLoading, setStatsLoading] = useState(false)
+  const [quizSprites, setQuizSprites] = useState([])
 
   const handleLogin = (e) => {
     e.preventDefault()
@@ -103,6 +122,11 @@ function App() {
       setQuizSessionId(data.session_id)
       setCurrentAnswers({})
       setQuestionResults({})
+      const shuffled = shuffle(POKEMON_SPRITES)
+      const needed = data.questions.length
+      const picked = []
+      for (let i = 0; i < needed; i++) picked.push(shuffled[i % shuffled.length])
+      setQuizSprites(picked)
     } catch (error) {
       console.error('Error fetching questions:', error)
     } finally {
@@ -373,7 +397,7 @@ function App() {
           {questions.map((question, index) => {
             const result = questionResults[question.id]
             const isAnswered = !!result
-            const sprite = POKEMON_SPRITES[index % POKEMON_SPRITES.length]
+            const sprite = quizSprites[index] ?? POKEMON_SPRITES[index % POKEMON_SPRITES.length]
 
             return (
               <div
