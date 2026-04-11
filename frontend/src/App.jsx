@@ -177,8 +177,17 @@ function App() {
     if (trimmed) {
       setIsLoggedIn(true)
       setCatches(loadCatches(trimmed))
-      fetchQuestions()
     }
+  }
+
+  const handleBackToMenu = () => {
+    setQuestions([])
+    setCurrentAnswers({})
+    setQuestionResults({})
+    setQuizSessionId(null)
+    setQuizSprites([])
+    setAdaptiveNotice(null)
+    setActiveTab('play')
   }
 
   const fetchQuestions = async () => {
@@ -542,40 +551,8 @@ function App() {
                 required
                 autoFocus
               />
-              <div className="difficulty-selector">
-                <label className="difficulty-label">Choose your badge:</label>
-                <div className="difficulty-buttons">
-                  <button
-                    type="button"
-                    className={`difficulty-btn ${difficulty === 'easy' ? 'selected' : ''}`}
-                    onClick={() => setDifficulty('easy')}
-                  >
-                    <img src={ballPoke} alt="" className="badge-ball" />
-                    Poké Ball
-                    <span className="difficulty-desc">(+/- up to 20)</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`difficulty-btn ${difficulty === 'medium' ? 'selected' : ''}`}
-                    onClick={() => setDifficulty('medium')}
-                  >
-                    <img src={ballGreat} alt="" className="badge-ball" />
-                    Great Ball
-                    <span className="difficulty-desc">(+/- up to 100, ×)</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`difficulty-btn ${difficulty === 'hard' ? 'selected' : ''}`}
-                    onClick={() => setDifficulty('hard')}
-                  >
-                    <img src={ballUltra} alt="" className="badge-ball" />
-                    Ultra Ball
-                    <span className="difficulty-desc">(all ops up to 1000)</span>
-                  </button>
-                </div>
-              </div>
               <button type="submit" className="login-btn">
-                START JOURNEY
+                LOG IN
               </button>
             </form>
           </div>
@@ -592,6 +569,77 @@ function App() {
       )
     }
 
+    if (questions.length === 0) {
+      const caughtCount = Object.values(catches).filter(n => n > 0).length
+      return (
+        <div className="menu-container">
+          <header className="header">
+            <h1 className="title">
+              <img src={ballPoke} alt="pokeball" className="title-ball" />
+              MATH TRAINER
+              <img src={ballPoke} alt="pokeball" className="title-ball" />
+            </h1>
+            <p className="subtitle">Welcome back, Trainer {username}!</p>
+            <div className="username-display">
+              Trainer: {username}
+              <button type="button" className="switch-user-btn" onClick={handleSwitchUser}>
+                Switch Trainer
+              </button>
+            </div>
+            <div className="menu-catch-summary">
+              Caught so far: <strong>{caughtCount}</strong> / {POKEMON_SPRITES.length}
+            </div>
+          </header>
+
+          <div className="menu-card">
+            <div className="difficulty-selector">
+              <label className="difficulty-label">Choose your badge:</label>
+              <div className="difficulty-buttons">
+                <button
+                  type="button"
+                  className={`difficulty-btn ${difficulty === 'easy' ? 'selected' : ''}`}
+                  onClick={() => setDifficulty('easy')}
+                >
+                  <img src={ballPoke} alt="" className="badge-ball" />
+                  Poké Ball
+                  <span className="difficulty-desc">(+/- up to 20)</span>
+                </button>
+                <button
+                  type="button"
+                  className={`difficulty-btn ${difficulty === 'medium' ? 'selected' : ''}`}
+                  onClick={() => setDifficulty('medium')}
+                >
+                  <img src={ballGreat} alt="" className="badge-ball" />
+                  Great Ball
+                  <span className="difficulty-desc">(+/- up to 100, ×)</span>
+                </button>
+                <button
+                  type="button"
+                  className={`difficulty-btn ${difficulty === 'hard' ? 'selected' : ''}`}
+                  onClick={() => setDifficulty('hard')}
+                >
+                  <img src={ballUltra} alt="" className="badge-ball" />
+                  Ultra Ball
+                  <span className="difficulty-desc">(all ops up to 1000)</span>
+                </button>
+              </div>
+            </div>
+            <button type="button" className="login-btn menu-start-btn" onClick={() => fetchQuestions()}>
+              START BATTLE
+            </button>
+            <button
+              type="button"
+              className="menu-pokedex-btn"
+              onClick={() => handleTabChange('stats')}
+            >
+              <img src={ballMaster} alt="" className="badge-ball" />
+              View Pokédex
+            </button>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <>
         <header className="header">
@@ -603,6 +651,9 @@ function App() {
           <p className="subtitle">Battle Pokémon with your math powers!</p>
           <div className="username-display">
             Trainer: {username}
+            <button type="button" className="switch-user-btn" onClick={handleBackToMenu}>
+              ← Menu
+            </button>
             <button type="button" className="switch-user-btn" onClick={handleSwitchUser}>
               Switch Trainer
             </button>
@@ -747,9 +798,14 @@ function App() {
               </div>
             </div>
 
-            <button onClick={handleRestart} className="restart-btn">
-              FIND NEW POKÉMON
-            </button>
+            <div className="final-actions">
+              <button onClick={handleRestart} className="restart-btn">
+                FIND NEW POKÉMON
+              </button>
+              <button onClick={handleBackToMenu} className="restart-btn restart-btn-secondary">
+                BACK TO MENU
+              </button>
+            </div>
           </div>
         )}
       </>
