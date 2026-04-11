@@ -165,9 +165,10 @@ function App() {
   }
 
   const fetchQuestions = async () => {
+    const effectiveDifficulty = difficulty
     setLoading(true)
     try {
-      const data = await generateQuiz(username, difficulty)
+      const data = await generateQuiz(username, effectiveDifficulty)
       setQuestions(data.questions)
       setQuizSessionId(data.session_id)
       setCurrentAnswers({})
@@ -223,9 +224,6 @@ function App() {
   }
 
   const handleRestart = () => {
-    if (adaptiveNotice && adaptiveNotice.next !== difficulty) {
-      setDifficulty(adaptiveNotice.next)
-    }
     setAdaptiveNotice(null)
     fetchQuestions()
   }
@@ -301,6 +299,7 @@ function App() {
     const suggestion = suggestNextDifficulty(difficulty, correct, questions.length)
     if (suggestion.direction !== 'same') {
       setAdaptiveNotice(suggestion)
+      setDifficulty(suggestion.next)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionResults])
@@ -625,7 +624,7 @@ function App() {
                 <button
                   type="button"
                   className={`restart-difficulty-btn ${difficulty === 'easy' ? 'selected' : ''}`}
-                  onClick={() => setDifficulty('easy')}
+                  onClick={() => { setDifficulty('easy'); setAdaptiveNotice(null) }}
                 >
                   <img src={ballPoke} alt="" className="badge-ball" />
                   Poké Ball
@@ -634,7 +633,7 @@ function App() {
                 <button
                   type="button"
                   className={`restart-difficulty-btn ${difficulty === 'medium' ? 'selected' : ''}`}
-                  onClick={() => setDifficulty('medium')}
+                  onClick={() => { setDifficulty('medium'); setAdaptiveNotice(null) }}
                 >
                   <img src={ballGreat} alt="" className="badge-ball" />
                   Great Ball
@@ -643,7 +642,7 @@ function App() {
                 <button
                   type="button"
                   className={`restart-difficulty-btn ${difficulty === 'hard' ? 'selected' : ''}`}
-                  onClick={() => setDifficulty('hard')}
+                  onClick={() => { setDifficulty('hard'); setAdaptiveNotice(null) }}
                 >
                   <img src={ballUltra} alt="" className="badge-ball" />
                   Ultra Ball
