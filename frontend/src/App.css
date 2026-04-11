@@ -582,7 +582,9 @@ body {
 }
 
 .username-display {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
@@ -592,6 +594,29 @@ body {
   padding: 0.4rem 1.2rem;
   margin-top: 0.5rem;
   box-shadow: 0 3px 0 var(--poke-ink);
+}
+
+.switch-user-btn {
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--poke-ink);
+  background: #ffcb05;
+  border: 2px solid var(--poke-ink);
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--poke-ink);
+  transition: transform 0.1s;
+}
+.switch-user-btn:hover {
+  transform: translateY(-1px);
+}
+.switch-user-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--poke-ink);
 }
 
 /* Difficulty Selector */
@@ -1068,4 +1093,179 @@ body {
     font-size: 0.75rem;
     padding: 0.2rem 0.5rem;
   }
+}
+
+/* ============================================================
+   Adaptive-difficulty banner
+   ============================================================ */
+.adaptive-banner {
+  margin: 1rem auto 1.25rem;
+  max-width: 520px;
+  padding: 0.85rem 1.2rem;
+  border-radius: 14px;
+  border: 3px solid var(--poke-ink);
+  box-shadow: 0 4px 0 var(--poke-ink);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.5;
+}
+.adaptive-banner.adaptive-up {
+  background: #d1f5d3;
+  color: #1b5e20;
+}
+.adaptive-banner.adaptive-down {
+  background: #fff2c2;
+  color: #6b4a00;
+}
+
+/* ============================================================
+   Review-missed button & modal
+   ============================================================ */
+.review-btn {
+  display: block;
+  margin: 0.5rem auto 1.25rem;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  color: var(--poke-ink);
+  background: var(--poke-yellow);
+  border: 3px solid var(--poke-ink);
+  border-radius: 999px;
+  padding: 0.85rem 1.6rem;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--poke-ink);
+  transition: transform 0.1s;
+}
+.review-btn:hover { transform: translateY(-2px); }
+.review-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--poke-ink);
+}
+
+.review-modal .review-question {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 2rem;
+  text-align: center;
+  margin: 1rem 0 1.5rem;
+  color: var(--poke-blue);
+}
+.review-answer-section {
+  justify-content: center;
+}
+.review-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.15rem;
+  text-align: center;
+  line-height: 1.5;
+}
+.review-next-btn {
+  min-width: 140px;
+}
+
+/* ============================================================
+   Settings modal
+   ============================================================ */
+.settings-tab {
+  margin-left: auto;
+}
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border: 2px solid var(--poke-ink);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.setting-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.setting-desc {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.5;
+}
+.setting-row input[type="checkbox"] {
+  width: 1.5rem;
+  height: 1.5rem;
+  accent-color: var(--poke-red);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Accessibility: dyslexia-friendly font + large text
+   ============================================================ */
+.a11y-dyslexia,
+.a11y-dyslexia body,
+.a11y-dyslexia * {
+  font-family: 'Lexend', 'Atkinson Hyperlegible', 'Fredoka', sans-serif !important;
+  letter-spacing: 0.02em;
+}
+.a11y-dyslexia .title,
+.a11y-dyslexia .login-title,
+.a11y-dyslexia h2,
+.a11y-dyslexia .question-text,
+.a11y-dyslexia .review-question,
+.a11y-dyslexia .final-score,
+.a11y-dyslexia .tab-btn,
+.a11y-dyslexia .difficulty-btn,
+.a11y-dyslexia .restart-difficulty-btn,
+.a11y-dyslexia .login-btn,
+.a11y-dyslexia .submit-answer-btn,
+.a11y-dyslexia .restart-btn,
+.a11y-dyslexia .review-btn {
+  font-family: 'Atkinson Hyperlegible', 'Lexend', sans-serif !important;
+  letter-spacing: 0.03em;
+  -webkit-text-stroke: 0 !important;
+  text-shadow: none !important;
+  color: var(--poke-ink) !important;
+}
+.a11y-dyslexia .title,
+.a11y-dyslexia .login-title {
+  color: var(--poke-blue) !important;
+}
+.a11y-dyslexia p,
+.a11y-dyslexia li,
+.a11y-dyslexia .setting-label,
+.a11y-dyslexia .setting-desc,
+.a11y-dyslexia .modal-intro,
+.a11y-dyslexia .strategy-text {
+  line-height: 1.7;
+  word-spacing: 0.05em;
+}
+
+.a11y-large {
+  font-size: 1.15rem;
+}
+.a11y-large .question-text,
+.a11y-large .review-question {
+  font-size: 2.4rem;
+}
+.a11y-large .answer-input {
+  font-size: 1.5rem;
+  padding: 0.9rem 1rem;
+}
+.a11y-large .setting-desc {
+  font-size: 1rem;
+}
+.a11y-large .modal-body p,
+.a11y-large .strategy-text {
+  font-size: 1.15rem;
+  line-height: 1.8;
 }

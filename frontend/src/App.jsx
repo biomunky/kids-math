@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 
 import ballPoke from './assets/pokemon/ball_poke.png'
@@ -90,6 +90,45 @@ function shuffle(arr) {
   return a
 }
 
+const DIFFICULTY_ORDER = ['easy', 'medium', 'hard']
+const DIFFICULTY_LABELS = { easy: 'Poké Ball', medium: 'Great Ball', hard: 'Ultra Ball' }
+
+function computeCorrectAnswer(q) {
+  switch (q.operator) {
+    case '+': return q.num1 + q.num2
+    case '-': return q.num1 - q.num2
+    case '*': return q.num1 * q.num2
+    case '/': return Math.trunc(q.num1 / q.num2)
+    default: return 0
+  }
+}
+
+function suggestNextDifficulty(current, correct, total) {
+  if (total === 0) return { next: current, direction: 'same' }
+  const accuracy = correct / total
+  const idx = DIFFICULTY_ORDER.indexOf(current)
+  if (accuracy >= 0.9 && idx < DIFFICULTY_ORDER.length - 1) {
+    return { next: DIFFICULTY_ORDER[idx + 1], direction: 'up' }
+  }
+  if (accuracy <= 0.4 && idx > 0) {
+    return { next: DIFFICULTY_ORDER[idx - 1], direction: 'down' }
+  }
+  return { next: current, direction: 'same' }
+}
+
+const SETTINGS_KEY = 'math-hunter-settings-v1'
+const defaultSettings = { adaptive: true, dyslexiaFont: false, largeText: false }
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY)
+    if (!raw) return defaultSettings
+    return { ...defaultSettings, ...JSON.parse(raw) }
+  } catch {
+    return defaultSettings
+  }
+}
+
 function App() {
   const [username, setUsername] = useState('')
   const [difficulty, setDifficulty] = useState('medium')
@@ -105,6 +144,17 @@ function App() {
   const [stats, setStats] = useState([])
   const [statsLoading, setStatsLoading] = useState(false)
   const [quizSprites, setQuizSprites] = useState([])
+  const [settings, setSettings] = useState(loadSettings)
+  const [showSettings, setShowSettings] = useState(false)
+  const [reviewMode, setReviewMode] = useState(false)
+  const [reviewIndex, setReviewIndex] = useState(0)
+  const [reviewAnswer, setReviewAnswer] = useState('')
+  const [reviewFeedback, setReviewFeedback] = useState(null)
+  const [adaptiveNotice, setAdaptiveNotice] = useState(null)
+
+  useEffect(() => {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ }
+  }, [settings])
 
   const handleLogin = (e) => {
     e.preventDefault()
@@ -173,7 +223,68 @@ function App() {
   }
 
   const handleRestart = () => {
+    if (adaptiveNotice && adaptiveNotice.next !== difficulty) {
+      setDifficulty(adaptiveNotice.next)
+    }
+    setAdaptiveNotice(null)
     fetchQuestions()
+  }
+
+  const getMissedQuestions = () => {
+    return questions.filter(q => {
+      const r = questionResults[q.id]
+      return r && !r.correct
+    })
+  }
+
+  const handleStartReview = () => {
+    setReviewMode(true)
+    setReviewIndex(0)
+    setReviewAnswer('')
+    setReviewFeedback(null)
+  }
+
+  const handleCloseReview = () => {
+    setReviewMode(false)
+    setReviewFeedback(null)
+    setReviewAnswer('')
+  }
+
+  const handleReviewSubmit = () => {
+    const missed = getMissedQuestions()
+    const q = missed[reviewIndex]
+    if (!q || reviewAnswer === '') return
+    const correct = computeCorrectAnswer(q)
+    const userAns = parseInt(reviewAnswer, 10)
+    setReviewFeedback({ correct: userAns === correct, correctAnswer: correct, userAnswer: userAns })
+  }
+
+  const handleReviewNext = () => {
+    const missed = getMissedQuestions()
+    if (reviewIndex + 1 >= missed.length) {
+      handleCloseReview()
+      return
+    }
+    setReviewIndex(reviewIndex + 1)
+    setReviewAnswer('')
+    setReviewFeedback(null)
+  }
+
+  const toggleSetting = (key) => {
+    setSettings(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleSwitchUser = () => {
+    setIsLoggedIn(false)
+    setUsername('')
+    setQuestions([])
+    setCurrentAnswers({})
+    setQuestionResults({})
+    setQuizSessionId(null)
+    setQuizSprites([])
+    setActiveTab('play')
+    setAdaptiveNotice(null)
+    setReviewMode(false)
   }
 
   const getTotalScore = () => {
@@ -183,6 +294,16 @@ function App() {
   const allQuestionsAnswered = () => {
     return questions.length > 0 && Object.keys(questionResults).length === questions.length
   }
+
+  useEffect(() => {
+    if (!allQuestionsAnswered() || !settings.adaptive || adaptiveNotice) return
+    const correct = Object.values(questionResults).filter(r => r.correct).length
+    const suggestion = suggestNextDifficulty(difficulty, correct, questions.length)
+    if (suggestion.direction !== 'same') {
+      setAdaptiveNotice(suggestion)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [questionResults])
 
   const getOperatorHelp = (operator) => {
     const helpText = {
@@ -385,7 +506,12 @@ function App() {
             <img src={ballPoke} alt="pokeball" className="title-ball" />
           </h1>
           <p className="subtitle">Battle Pokémon with your math powers!</p>
-          <div className="username-display">Trainer: {username}</div>
+          <div className="username-display">
+            Trainer: {username}
+            <button type="button" className="switch-user-btn" onClick={handleSwitchUser}>
+              Switch Trainer
+            </button>
+          </div>
           {questions.length > 0 && (
             <div className="score-tracker">
               Caught: {getTotalScore()} / {questions.length}
@@ -479,6 +605,20 @@ function App() {
               </div>
             </div>
 
+            {adaptiveNotice && adaptiveNotice.direction !== 'same' && (
+              <div className={`adaptive-banner adaptive-${adaptiveNotice.direction}`}>
+                {adaptiveNotice.direction === 'up'
+                  ? `⬆ Nice work! Leveling you up to ${DIFFICULTY_LABELS[adaptiveNotice.next]} for the next battle.`
+                  : `⬇ Let's steady up with ${DIFFICULTY_LABELS[adaptiveNotice.next]} for the next battle.`}
+              </div>
+            )}
+
+            {getMissedQuestions().length > 0 && (
+              <button type="button" className="review-btn" onClick={handleStartReview}>
+                🔁 Review Missed ({getMissedQuestions().length})
+              </button>
+            )}
+
             <div className="restart-difficulty-section">
               <label className="restart-difficulty-label">Choose ball type for next battle:</label>
               <div className="restart-difficulty-buttons">
@@ -521,8 +661,14 @@ function App() {
     )
   }
 
+  const appClass = [
+    'app',
+    settings.dyslexiaFont ? 'a11y-dyslexia' : '',
+    settings.largeText ? 'a11y-large' : '',
+  ].filter(Boolean).join(' ')
+
   return (
-    <div className="app">
+    <div className={appClass}>
       <div className="tab-bar">
         <button
           className={`tab-btn ${activeTab === 'play' ? 'active' : ''}`}
@@ -535,6 +681,14 @@ function App() {
           onClick={() => handleTabChange('stats')}
         >
           <img src={ballMaster} alt="" className="tab-ball" /> Pokédex
+        </button>
+        <button
+          className="tab-btn settings-tab"
+          onClick={() => setShowSettings(true)}
+          title="Settings"
+          aria-label="Open settings"
+        >
+          ⚙ Settings
         </button>
       </div>
 
@@ -559,6 +713,108 @@ function App() {
               </ul>
               <div className="modal-footer">
                 <p className="modal-hint">💡 Try applying one of these strategies to your current problem!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reviewMode && (() => {
+        const missed = getMissedQuestions()
+        const total = missed.length
+        const q = missed[reviewIndex]
+        if (!q) return null
+        return (
+          <div className="modal-overlay" onClick={handleCloseReview}>
+            <div className="modal-content review-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Review Missed ({reviewIndex + 1} / {total})</h2>
+                <button className="modal-close-btn" onClick={handleCloseReview}>✕</button>
+              </div>
+              <div className="modal-body">
+                <div className="review-question">{q.question} = ?</div>
+                {!reviewFeedback ? (
+                  <div className="answer-section review-answer-section">
+                    <input
+                      type="number"
+                      className="answer-input"
+                      value={reviewAnswer}
+                      onChange={(e) => setReviewAnswer(e.target.value)}
+                      onKeyPress={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleReviewSubmit() } }}
+                      placeholder="Your answer"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      className="submit-answer-btn"
+                      onClick={handleReviewSubmit}
+                      disabled={reviewAnswer === ''}
+                    >
+                      CHECK
+                    </button>
+                  </div>
+                ) : (
+                  <div className="review-feedback">
+                    {reviewFeedback.correct ? (
+                      <span className="correct-msg">✅ Correct! You've got it now.</span>
+                    ) : (
+                      <span className="incorrect-msg">
+                        Not quite — the answer is {reviewFeedback.correctAnswer}. You had {reviewFeedback.userAnswer}.
+                      </span>
+                    )}
+                    <button type="button" className="submit-answer-btn review-next-btn" onClick={handleReviewNext}>
+                      {reviewIndex + 1 >= total ? 'DONE' : 'NEXT'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {showSettings && (
+        <div className="modal-overlay" onClick={() => setShowSettings(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Settings</h2>
+              <button className="modal-close-btn" onClick={() => setShowSettings(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div className="settings-group">
+                <label className="setting-row">
+                  <span className="setting-label">
+                    Adaptive difficulty
+                    <span className="setting-desc">Auto-adjust the ball level based on your accuracy.</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={settings.adaptive}
+                    onChange={() => toggleSetting('adaptive')}
+                  />
+                </label>
+                <label className="setting-row">
+                  <span className="setting-label">
+                    Dyslexia-friendly font
+                    <span className="setting-desc">Switches headings and body text to Lexend / Atkinson Hyperlegible.</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={settings.dyslexiaFont}
+                    onChange={() => toggleSetting('dyslexiaFont')}
+                  />
+                </label>
+                <label className="setting-row">
+                  <span className="setting-label">
+                    Large text
+                    <span className="setting-desc">Bumps font sizes and spacing for easier reading.</span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={settings.largeText}
+                    onChange={() => toggleSetting('largeText')}
+                  />
+                </label>
               </div>
             </div>
           </div>
