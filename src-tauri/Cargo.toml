@@ -1,8 +1,8 @@
 [package]
 name = "math-hunter"
 version = "0.1.0"
-description = "K-POP DEMON HUNTER - Math Learning Game"
-authors = ["Math Hunter Team"]
+description = "Math Trainer - Pokémon themed Math Learning Game"
+authors = ["Math Trainer Team"]
 license = "MIT"
 repository = ""
 edition = "2021"
