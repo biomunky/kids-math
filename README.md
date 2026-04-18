@@ -1,255 +1,116 @@
-# Math Trainer - Pokémon Edition
 
-A Pokémon-themed educational application that teaches children addition and subtraction (and more!) through an interactive quiz interface. Built with React and Rust.
+> [!WARNING]
+> This is mostly AI coded with Claude, it's likely not the best code, my kids love it and that's all that matters.
+
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/25.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/6.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/94.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/150.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/448.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/658.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/906.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/133.gif"/>
+
+# Pokemon Math Hunter
+
+**Answer maths questions. Catch Pokemon. Fill your Pokedex.**
+
+</div>
+
+---
+
+## What is it?
+
+A maths game where every correct answer earns you a Pokeball — and every Pokeball is a chance to catch one of **1003 animated Pokemon** from all 9 generations.
+
+Get it right and the Pokemon is yours. Get it wrong and it breaks free.
+
+---
+
+## How to play
+
+```
+  1. Enter your trainer name
+  2. Pick a difficulty
+  3. A wild Pokemon appears!
+  4. Solve the maths problem to catch it
+  5. Fill your Pokedex
+```
+
+The game watches how you're doing and adjusts difficulty automatically — it bumps you up when you're on a roll, and eases off if you're struggling.
+
+---
+
+## Difficulty
+
+| | Ball | Level | Maths |
+|-|------|-------|-------|
+| ![](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/129.gif) | Poke Ball | Easy | Addition and subtraction, small numbers |
+| ![](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/147.gif) | Great Ball | Medium | Bigger numbers, multiply and divide |
+| ![](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/149.gif) | Ultra Ball | Hard | All operators, harder numbers |
+
+---
 
 ## Features
 
-- **Pokémon themed UI** with bright colors, bouncy Poké Balls, and friendly Pokémon sprites (Pikachu, Charmander, Squirtle, Bulbasaur, and friends)
-- **Immediate feedback** - Get instant results after answering each question
-- **5 randomly generated math questions** per quiz session
-- **Addition and subtraction** problems with numbers ranging from 0-100
-- **Real-time score tracking** displayed at the top
-- **SQLite database** - All questions, answers, and results are persisted
-- **Visual feedback** - Question cards change color based on correct/incorrect answers
-- **Responsive design** for various screen sizes
-- **Animated UI elements** - Floating icons, glowing effects, and smooth transitions
+| | |
+|-|-|
+| ![](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/151.gif) | **1003 animated Pokemon** — Gen 1 through Gen 9 |
+| ![](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/197.gif) | **Pokedex** — tap any caught Pokemon to see types, stats, abilities and moves |
+| ![](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/196.gif) | **Adaptive difficulty** — adjusts based on your accuracy |
+| ![](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/175.gif) | **Multiple trainers** — each player has their own save, stored locally |
+| ![](https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/52.gif) | **Works offline** — no account, no login, everything in the browser |
 
-## Tech Stack
+---
 
-### Frontend
-- React (Vite)
-- Modern CSS with animations and gradients
-- Google Fonts (Press Start 2P, Orbitron)
-- Immediate answer validation
+## Running it
 
-### Backend
-- Rust
-- Axum web framework
-- SQLx for SQLite database operations
-- Tower HTTP for CORS
-- Tokio async runtime
-- UUID for session tracking
-- Chrono for timestamps
-
-### Database
-- SQLite
-- Tables: quiz_sessions, questions, answers
-- Persistent storage of all quiz data
-
-## Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-- Rust (latest stable version)
-- Cargo (comes with Rust)
-
-## Installation & Setup
-
-### 1. Backend Setup
-
-Navigate to the backend directory and run:
+### Web app
 
 ```bash
-cd backend
-cargo build --release
+make dev
 ```
 
-### 2. Frontend Setup
-
-Navigate to the frontend directory and install dependencies:
+Or manually:
 
 ```bash
-cd frontend
-npm install
+cd backend && cargo run          # http://localhost:3000
+cd frontend && npm run dev       # http://localhost:5173
 ```
 
-## Running the Application
-
-You'll need to run both the backend and frontend servers.
-
-### Start the Backend Server
-
-In the backend directory:
+### Desktop app (Tauri)
 
 ```bash
-cd backend
-cargo run
+make tauri-dev
 ```
 
-The backend will start on `http://localhost:3000` and create a `math_hunter.db` SQLite database file.
+---
 
-### Start the Frontend Server
+## Stack
 
-In a new terminal, navigate to the frontend directory:
+| Part | Tech |
+|------|------|
+| Frontend | React, Vite |
+| Backend | Rust, Axum, SQLite |
+| Desktop | Tauri |
+| Sprites | PokeAPI showdown animated GIFs |
+| Pokemon data | [PokeAPI](https://pokeapi.co) |
 
-```bash
-cd frontend
-npm run dev
-```
+---
 
-The frontend will typically start on `http://localhost:5173` (Vite will show you the exact URL)
+<div align="center">
 
-## How to Play
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/252.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/255.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/258.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/155.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/158.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/152.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/908.gif"/>
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/249.gif"/>
 
-1. Open the frontend URL in your web browser
-2. You'll see math questions, each featuring a wild Pokémon
-3. Answer each question by typing your answer and clicking "THROW BALL!"
-4. Get **immediate feedback** - the question card will turn green (caught!) or red (broke free)
-5. See your running catch count at the top of the page
-6. After answering all questions, view your final score and performance message
-7. Click "FIND NEW POKÉMON" to start a new quiz session
+*Gotta catch 'em all — one sum at a time.*
 
-## API Endpoints
-
-### GET /api/quiz
-Generates a new quiz session with 5 random math questions and saves them to the database.
-
-**Response:**
-```json
-{
-  "session_id": "550e8400-e29b-41d4-a716-446655440000",
-  "questions": [
-    {
-      "id": 0,
-      "num1": 45,
-      "num2": 23,
-      "operator": "+",
-      "question": "45 + 23"
-    },
-    ...
-  ]
-}
-```
-
-### POST /api/check-answer
-Validates a single answer and saves it to the database.
-
-**Request:**
-```json
-{
-  "session_id": "550e8400-e29b-41d4-a716-446655440000",
-  "question_id": 0,
-  "answer": 68,
-  "question": {
-    "id": 0,
-    "num1": 45,
-    "num2": 23,
-    "operator": "+",
-    "question": "45 + 23"
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "correct": true,
-  "correct_answer": 68
-}
-```
-
-## Database Schema
-
-### quiz_sessions
-- `id` (TEXT, PRIMARY KEY) - UUID for the quiz session
-- `created_at` (TEXT) - ISO 8601 timestamp
-
-### questions
-- `id` (INTEGER, PRIMARY KEY, AUTOINCREMENT)
-- `session_id` (TEXT, FOREIGN KEY) - References quiz_sessions(id)
-- `question_id` (INTEGER) - Question number (0-4)
-- `num1` (INTEGER) - First number
-- `num2` (INTEGER) - Second number
-- `operator` (TEXT) - "+" or "-"
-- `question_text` (TEXT) - Full question string
-- `correct_answer` (INTEGER) - The correct answer
-
-### answers
-- `id` (INTEGER, PRIMARY KEY, AUTOINCREMENT)
-- `session_id` (TEXT, FOREIGN KEY) - References quiz_sessions(id)
-- `question_id` (INTEGER) - Question number (0-4)
-- `user_answer` (INTEGER) - User's submitted answer
-- `is_correct` (BOOLEAN) - Whether the answer was correct
-- `answered_at` (TEXT) - ISO 8601 timestamp
-
-## Project Structure
-
-```
-math-hunter/
-├── backend/
-│   ├── src/
-│   │   └── main.rs
-│   ├── Cargo.toml
-│   ├── schema.sql
-│   └── math_hunter.db (created on first run)
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── index.html
-│   └── package.json
-└── README.md
-```
-
-## Theme Elements
-
-- **Colors**: Bright Pokémon palette — red, yellow, blue, and cream with bold black outlines
-- **Fonts**: Press Start 2P for headings/buttons, Fredoka for body text
-- **Sprites**: Pokémon face icons (Pikachu, Charmander, Squirtle, Bulbasaur, Rattata, Jigglypuff, Eevee, Meowth) and Poké Balls (Poké / Great / Ultra / Master)
-- **Animations**:
-  - Bouncing Poké Balls on the title
-  - Floating Pokémon sprites on question cards
-  - Spinning Poké Ball loader
-  - Chunky "press-down" button animations
-  - Scale-in animations for results
-- **Styling**: Chunky cartoon look inspired by classic Pokémon UIs
-- **Feedback**: Green card for caught, red card for missed
-
-## Development
-
-### Backend Development
-The backend uses Axum for routing and SQLx for database operations:
-- Random question generation with non-negative results for subtraction
-- Individual answer validation with immediate feedback
-- Session-based tracking with UUID
-- Persistent storage in SQLite
-- CORS configuration for frontend communication
-
-### Frontend Development
-The frontend is a single-page React application that:
-- Fetches questions from the backend and receives a session ID
-- Submits each answer individually for immediate validation
-- Displays real-time feedback with color-coded question cards
-- Shows running score during the quiz
-- Provides performance messages at the end
-- Uses modern CSS animations and effects
-
-## Data Persistence
-
-All quiz data is stored in the SQLite database (`math_hunter.db`):
-- Every quiz session is tracked with a unique UUID
-- All questions generated for each session are saved
-- Every answer submitted by users is recorded with timestamp
-- You can query the database to view historical quiz performance
-
-Example query:
-```sql
--- View all quiz sessions
-SELECT * FROM quiz_sessions;
-
--- View questions for a specific session
-SELECT * FROM questions WHERE session_id = 'your-session-id';
-
--- View answers with correctness
-SELECT * FROM answers WHERE session_id = 'your-session-id';
-```
-
-## License
-
-MIT
-
-## Contributing
-
-Feel free to submit issues and enhancement requests!
+</div>
