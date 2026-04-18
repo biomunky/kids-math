@@ -13,19 +13,122 @@ import pokemonNamesData from './pokemonNames.json'
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
+// --- Web-mode client-side implementations ----------------------------------
+const webSessions = new Map() // sessionId -> { username, difficulty }
+const STATS_KEY_PREFIX = 'math-hunter-stats-v1-'
+
+function loadWebStats(username) {
+  try {
+    const raw = localStorage.getItem(STATS_KEY_PREFIX + username)
+    const base = { easy: { total: 0, correct: 0 }, medium: { total: 0, correct: 0 }, hard: { total: 0, correct: 0 } }
+    return raw ? { ...base, ...JSON.parse(raw) } : base
+  } catch { return { easy: { total: 0, correct: 0 }, medium: { total: 0, correct: 0 }, hard: { total: 0, correct: 0 } } }
+}
+
+function saveWebStats(username, stats) {
+  try { localStorage.setItem(STATS_KEY_PREFIX + username, JSON.stringify(stats)) } catch { /* ignore */ }
+}
+
+function generateWebQuiz(username, difficulty) {
+  const sessionId = Math.random().toString(36).slice(2)
+  const questions = []
+  const seen = new Set()
+  const configs = {
+    easy:   { operators: ['+', '-'],        maxNum: 20 },
+    medium: { operators: ['+', '-', '*'],   maxNum: 100 },
+    hard:   { operators: ['+', '-', '*', '/'], maxNum: 1000 },
+  }
+  const { operators, maxNum } = configs[difficulty] ?? configs.medium
+
+  while (questions.length < 10) {
+    const op = operators[Math.floor(Math.random() * operators.length)]
+    let n1, n2
+
+    if (op === '+') {
+      n1 = Math.floor(Math.random() * (maxNum + 1))
+      n2 = Math.floor(Math.random() * (maxNum - n1 + 1))
+    } else if (op === '-') {
+      if (difficulty === 'easy') {
+        n1 = Math.floor(Math.random() * (maxNum + 1))
+        n2 = Math.floor(Math.random() * (n1 + 1))
+      } else {
+        const result = Math.floor(Math.random() * (maxNum + 1))
+        n2 = Math.floor(Math.random() * (maxNum + 1))
+        n1 = result + n2
+      }
+    } else if (op === '*') {
+      if (difficulty === 'medium') {
+        const tables = [2, 3, 4, 5, 10]
+        n1 = tables[Math.floor(Math.random() * tables.length)]
+        n2 = Math.floor(Math.random() * 12) + 1
+      } else {
+        n1 = Math.floor(Math.random() * 30) + 2
+        n2 = Math.floor(Math.random() * 30) + 2
+      }
+    } else {
+      n2 = Math.floor(Math.random() * 19) + 2
+      const quotient = Math.floor(Math.random() * 49) + 2
+      n1 = n2 * quotient
+    }
+
+    const key = `${n1}${op}${n2}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    questions.push({ id: questions.length, num1: n1, num2: n2, operator: op, question: `${n1} ${op} ${n2}` })
+  }
+
+  webSessions.set(sessionId, { username, difficulty })
+  return { session_id: sessionId, questions }
+}
+
+function checkWebAnswer(sessionId, _questionId, answer, question) {
+  let correctAnswer
+  switch (question.operator) {
+    case '+': correctAnswer = question.num1 + question.num2; break
+    case '-': correctAnswer = question.num1 - question.num2; break
+    case '*': correctAnswer = question.num1 * question.num2; break
+    case '/': correctAnswer = Math.trunc(question.num1 / question.num2); break
+    default:  correctAnswer = 0
+  }
+  const isCorrect = answer === correctAnswer
+
+  const session = webSessions.get(sessionId)
+  if (session) {
+    const stats = loadWebStats(session.username)
+    const d = session.difficulty
+    if (!stats[d]) stats[d] = { total: 0, correct: 0 }
+    stats[d].total++
+    if (isCorrect) stats[d].correct++
+    saveWebStats(session.username, stats)
+  }
+
+  return { correct: isCorrect, correct_answer: correctAnswer }
+}
+
+function getWebStats() {
+  const result = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (!key?.startsWith(STATS_KEY_PREFIX)) continue
+    const username = key.slice(STATS_KEY_PREFIX.length)
+    try {
+      const stats = JSON.parse(localStorage.getItem(key) ?? '{}')
+      for (const [difficulty, data] of Object.entries(stats)) {
+        result.push({ username, difficulty, total_questions: data.total ?? 0, correct_answers: data.correct ?? 0 })
+      }
+    } catch { /* ignore */ }
+  }
+  return result
+}
+// ---------------------------------------------------------------------------
+
 // --- API helpers -----------------------------------------------------------
 async function generateQuiz(username, difficulty) {
   if (isTauri) {
     const { invoke } = await import('@tauri-apps/api/core')
     return invoke('generate_quiz', { username, difficulty })
   }
-  const res = await fetch('/api/quiz', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, difficulty }),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+  return generateWebQuiz(username, difficulty)
 }
 
 async function checkAnswer(sessionId, questionId, answer, question) {
@@ -33,18 +136,7 @@ async function checkAnswer(sessionId, questionId, answer, question) {
     const { invoke } = await import('@tauri-apps/api/core')
     return invoke('check_answer', { sessionId, questionId, answer, question })
   }
-  const res = await fetch('/api/check-answer', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      session_id: sessionId,
-      question_id: questionId,
-      answer,
-      question,
-    }),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+  return checkWebAnswer(sessionId, questionId, answer, question)
 }
 
 async function getStats() {
@@ -52,9 +144,7 @@ async function getStats() {
     const { invoke } = await import('@tauri-apps/api/core')
     return invoke('get_stats')
   }
-  const res = await fetch('/api/stats')
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+  return getWebStats()
 }
 // ---------------------------------------------------------------------------
 

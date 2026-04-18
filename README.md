@@ -17,6 +17,8 @@
 
 **Answer maths questions. Catch Pokemon. Fill your Pokedex.**
 
+**[Play now at danklose.xyz/kids-math](https://danklose.xyz/kids-math/)**
+
 </div>
 
 ---
