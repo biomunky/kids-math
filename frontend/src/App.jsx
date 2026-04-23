@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
+import nedry from './assets/pokemon/nedry.gif'
 import ballPoke from './assets/pokemon/ball_poke.png'
 import ballGreat from './assets/pokemon/ball_great.png'
 import ballUltra from './assets/pokemon/ball_ultra.png'
@@ -153,6 +154,14 @@ const POKEMON_NAMES = Object.fromEntries(
 )
 
 const BALL_SPRITES = [ballPoke, ballGreat, ballUltra, ballMaster, ballNet, ballSafari, ballHeal, ballPremier]
+
+const rocketModules = import.meta.glob('./assets/pokemon/team_rocket*.png', { eager: true, import: 'default' })
+const TEAM_ROCKET_IMAGES = Object.values(rocketModules)
+
+function randomRocketImage() {
+  if (Math.random() < 0.05) return nedry
+  return TEAM_ROCKET_IMAGES[Math.floor(Math.random() * TEAM_ROCKET_IMAGES.length)]
+}
 
 const spriteModules = import.meta.glob('./assets/pokemon/poke_*.gif', { eager: true, import: 'default' })
 const POKEMON_SPRITES = Object.entries(spriteModules)
@@ -312,6 +321,8 @@ function App() {
   const [detailsCache, setDetailsCache] = useState({})
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [detailsError, setDetailsError] = useState(null)
+  const [questionAttempts, setQuestionAttempts] = useState({})
+  const [teamRocketPopup, setTeamRocketPopup] = useState(null)
 
   useEffect(() => {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ }
@@ -345,6 +356,8 @@ function App() {
       setQuizSessionId(data.session_id)
       setCurrentAnswers({})
       setQuestionResults({})
+      setQuestionAttempts({})
+      setTeamRocketPopup(null)
       const shuffled = shuffle(POKEMON_SPRITES)
       const needed = data.questions.length
       const picked = []
@@ -374,6 +387,16 @@ function App() {
 
     try {
       const data = await checkAnswer(quizSessionId, questionId, answer, question)
+
+      if (!data.correct) {
+        const attempts = (questionAttempts[questionId] ?? 0) + 1
+        setQuestionAttempts(prev => ({ ...prev, [questionId]: attempts }))
+        if (attempts < 2) {
+          setCurrentAnswers(prev => ({ ...prev, [questionId]: '' }))
+          setTeamRocketPopup({ questionId, image: randomRocketImage() })
+          return
+        }
+      }
 
       setQuestionResults(prev => ({
         ...prev,
@@ -840,11 +863,12 @@ function App() {
             const result = questionResults[question.id]
             const isAnswered = !!result
             const sprite = quizSprites[index] ?? POKEMON_SPRITES[index % POKEMON_SPRITES.length]
+            const attempts = questionAttempts[question.id] ?? 0
 
             return (
               <div
                 key={question.id}
-                className={`question-card ${isAnswered ? (result.correct ? 'answered-correct' : 'answered-incorrect') : ''}`}
+                className={`question-card ${isAnswered ? (result.correct ? 'answered-correct' : 'answered-incorrect') : (attempts === 1 ? 'second-attempt' : '')}`}
               >
                 <div className="question-icon">
                   <img src={sprite.src} alt={sprite.name} className="pokemon-sprite" />
@@ -862,6 +886,9 @@ function App() {
                     </button>
                   </div>
                   <div className="question-text">{question.question} = ?</div>
+                  {attempts === 1 && !isAnswered && (
+                    <div className="second-attempt-hint">Last chance!</div>
+                  )}
 
                   {!isAnswered ? (
                     <div className="answer-section">
@@ -1014,6 +1041,17 @@ function App() {
       </div>
 
       {activeTab === 'stats' ? renderStats() : renderPlay()}
+
+      {teamRocketPopup !== null && (
+        <div className="modal-overlay" onClick={() => setTeamRocketPopup(null)}>
+          <div className="modal-content team-rocket-popup" onClick={(e) => e.stopPropagation()}>
+            <img src={teamRocketPopup.image} alt="Team Rocket" className="team-rocket-img" />
+            <div className="team-rocket-text">Prepare for trouble!</div>
+            <div className="team-rocket-subtext">Try again, Trainer!</div>
+            <button className="submit-answer-btn" onClick={() => setTeamRocketPopup(null)}>OK!</button>
+          </div>
+        </div>
+      )}
 
       {showHelp && helpOperator && (
         <div className="modal-overlay" onClick={handleCloseHelp}>
