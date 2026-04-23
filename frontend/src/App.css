@@ -145,6 +145,21 @@ body {
   box-shadow: 0 6px 0 var(--poke-dark-red), 0 10px 20px rgba(183,28,28,0.3);
 }
 
+.question-card.second-attempt {
+  background: #fff8e1;
+  border-color: #f9a825;
+  box-shadow: 0 6px 0 #f9a825, 0 10px 20px rgba(249,168,37,0.25);
+}
+
+.second-attempt-hint {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #e65100;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .question-icon {
   flex-shrink: 0;
   z-index: 1;
@@ -671,6 +686,37 @@ body {
   font-size: 0.75rem;
   color: rgba(0,0,0,0.6);
   font-weight: 500;
+}
+
+/* Team Rocket Popup */
+.team-rocket-popup {
+  text-align: center;
+  padding: 1.25rem 1.5rem;
+  max-width: 380px;
+}
+
+.team-rocket-img {
+  width: auto;
+  max-width: 100%;
+  max-height: 40vh;
+  object-fit: contain;
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.team-rocket-text {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--poke-red);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.03em;
+}
+
+.team-rocket-subtext {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  color: var(--poke-ink);
 }
 
 /* Help Modal */
