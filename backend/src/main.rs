@@ -186,7 +186,7 @@ async fn main() {
                 let (operators, max_num) = match difficulty.as_str() {
                     "easy" => (vec!["+", "-"], 20),
                     "hard" => (vec!["+", "-", "*", "/"], 1000),
-                    _ => (vec!["+", "-", "*"], 100),
+                    _ => (vec!["+", "-", "*", "/"], 100),
                 };
 
                 let mut i = 0;
