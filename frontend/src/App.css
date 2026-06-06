@@ -1388,6 +1388,19 @@ body {
   box-shadow: 0 1px 0 var(--poke-ink);
 }
 
+.paste-import-area {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  border: 2px solid var(--poke-ink);
+  border-radius: 8px;
+  resize: vertical;
+  margin-bottom: 0.8rem;
+  background: #f9f9f9;
+}
+
 .difficulty-stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

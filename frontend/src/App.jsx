@@ -323,6 +323,8 @@ function App() {
   const [detailsError, setDetailsError] = useState(null)
   const [questionAttempts, setQuestionAttempts] = useState({})
   const [teamRocketPopup, setTeamRocketPopup] = useState(null)
+  const [pasteImportOpen, setPasteImportOpen] = useState(false)
+  const [pasteImportText, setPasteImportText] = useState('')
 
   useEffect(() => {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)) } catch { /* ignore */ }
@@ -631,6 +633,15 @@ function App() {
       }
     }
 
+    // Try clipboard copy — reliable on mobile where anchor downloads don't save
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(json)
+        alert(`Pokédex copied to clipboard!\n\nTo load it on another device, tap "Paste Import" and paste.`)
+        return
+      } catch { /* fall through to anchor download */ }
+    }
+
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -669,6 +680,28 @@ function App() {
       reader.readAsText(file)
     }
     input.click()
+  }
+
+  const applyPasteImport = () => {
+    try {
+      const data = JSON.parse(pasteImportText)
+      if (!Array.isArray(data.pokemon)) {
+        alert('Invalid Pokédex data.')
+        return
+      }
+      const merged = { ...catches }
+      for (const entry of data.pokemon) {
+        const id = entry.id
+        const count = entry.caught ?? 0
+        merged[id] = Math.max(merged[id] ?? 0, count)
+      }
+      setCatches(merged)
+      saveCatches(username.trim(), merged)
+      setPasteImportOpen(false)
+      setPasteImportText('')
+    } catch {
+      alert('Could not read that data. Make sure you pasted the full export.')
+    }
   }
 
   const renderStats = () => {
@@ -723,7 +756,10 @@ function App() {
               Export Pokédex
             </button>
             <button className="import-btn" onClick={importPokedex}>
-              Import Pokédex
+              Import File
+            </button>
+            <button className="import-btn" onClick={() => setPasteImportOpen(true)}>
+              Paste Import
             </button>
           </div>
 
@@ -1251,6 +1287,36 @@ function App() {
                   />
                 </label>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pasteImportOpen && (
+        <div className="modal-overlay" onClick={() => { setPasteImportOpen(false); setPasteImportText('') }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Paste Import</h2>
+              <button className="modal-close-btn" onClick={() => { setPasteImportOpen(false); setPasteImportText('') }}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-intro">Paste your exported Pokédex data below:</p>
+              <textarea
+                className="paste-import-area"
+                value={pasteImportText}
+                onChange={(e) => setPasteImportText(e.target.value)}
+                placeholder='{"trainer": "...", "pokemon": [...]}'
+                rows={8}
+                autoFocus
+              />
+              <button
+                type="button"
+                className="submit-answer-btn"
+                onClick={applyPasteImport}
+                disabled={!pasteImportText.trim()}
+              >
+                Import
+              </button>
             </div>
           </div>
         </div>
