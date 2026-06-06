@@ -1361,6 +1361,33 @@ body {
 .summary-wrong .summary-value { color: var(--poke-red); }
 .summary-caught .summary-value { color: var(--poke-gold); }
 
+.pokedex-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.export-btn,
+.import-btn {
+  padding: 0.65rem 1.4rem;
+  color: #fff;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.7rem;
+  border: 3px solid var(--poke-ink);
+  border-radius: 10px;
+  box-shadow: 0 4px 0 var(--poke-ink);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.export-btn { background: var(--poke-blue); }
+.import-btn { background: var(--poke-green); }
+.export-btn:active,
+.import-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--poke-ink);
+}
+
 .difficulty-stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
