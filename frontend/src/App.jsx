@@ -603,6 +603,74 @@ function App() {
     }
   }
 
+  const exportPokedex = async () => {
+    const trimmedUser = username.trim()
+    const caught = POKEMON_SPRITES
+      .filter(p => (catches[p.id] ?? 0) > 0)
+      .map(p => ({ id: p.id, name: p.name, caught: catches[p.id] }))
+
+    const payload = {
+      trainer: trimmedUser,
+      exported_at: new Date().toISOString(),
+      caught_count: caught.length,
+      total_pokemon: POKEMON_SPRITES.length,
+      pokemon: caught,
+    }
+
+    const json = JSON.stringify(payload, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const fileName = `pokedex-${trimmedUser}.json`
+
+    const file = new File([blob], fileName, { type: 'application/json' })
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: `${trimmedUser}'s Pokédex` })
+        return
+      } catch (err) {
+        if (err.name === 'AbortError') return
+      }
+    }
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const importPokedex = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'application/json,.json'
+    input.onchange = (e) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result)
+          if (!Array.isArray(data.pokemon)) {
+            alert('Invalid Pokédex file.')
+            return
+          }
+          const merged = { ...catches }
+          for (const entry of data.pokemon) {
+            const id = entry.id
+            const count = entry.caught ?? 0
+            merged[id] = Math.max(merged[id] ?? 0, count)
+          }
+          setCatches(merged)
+          saveCatches(username.trim(), merged)
+        } catch {
+          alert('Could not read that file.')
+        }
+      }
+      reader.readAsText(file)
+    }
+    input.click()
+  }
+
   const renderStats = () => {
     if (!isLoggedIn) {
       return (
@@ -649,6 +717,14 @@ function App() {
               <span className="summary-label">Caught</span>
               <span className="summary-value">{caughtCount} / {totalPokemon}</span>
             </div>
+          </div>
+          <div className="pokedex-actions">
+            <button className="export-btn" onClick={exportPokedex}>
+              Export Pokédex
+            </button>
+            <button className="import-btn" onClick={importPokedex}>
+              Import Pokédex
+            </button>
           </div>
 
           <div className="difficulty-stats-row">
