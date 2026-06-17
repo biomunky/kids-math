@@ -1,9 +1,12 @@
-use axum::{routing::{get, post}, Json, Router};
+use axum::{
+    routing::{get, post},
+    Json, Router,
+};
 use chrono::Utc;
-use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use rand::{Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
-use sqlx::sqlite::{SqlitePool, SqliteConnectOptions, SqlitePoolOptions};
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
 use std::net::SocketAddr;
 use std::str::FromStr;
 use tower_http::cors::{Any, CorsLayer};
@@ -125,10 +128,10 @@ async fn init_database(pool: &SqlitePool) -> Result<(), sqlx::Error> {
 async fn main() {
     // Initialize SQLite database
     let database_url = "sqlite:///Users/biomunky/scratch/ai/cc/math-hunter/backend/math_hunter.db";
-    let connect_options = SqliteConnectOptions::from_str(&database_url)
+    let connect_options = SqliteConnectOptions::from_str(database_url)
         .expect("Failed to parse database URL")
         .create_if_missing(true);
-    
+
     let pool = SqlitePoolOptions::new()
         .connect_with(connect_options)
         .await
@@ -184,7 +187,7 @@ async fn main() {
 
                 // Define difficulty parameters
                 let (operators, max_num) = match difficulty.as_str() {
-                    "easy" => (vec!["+", "-"], 20),
+                    "easy" => (vec!["+", "-"], 100),
                     "hard" => (vec!["+", "-", "*", "/"], 1000),
                     _ => (vec!["+", "-", "*", "/"], 100),
                 };
@@ -196,9 +199,9 @@ async fn main() {
                     let (n1, n2, correct_answer) = match operator {
                         "+" => {
                             if difficulty == "easy" {
-                                let num1 = rng.gen_range(0..=max_num);
+                                let num1 = rng.gen_range(1..=max_num - 1);
                                 let remaining = max_num - num1;
-                                let num2 = rng.gen_range(0..=remaining);
+                                let num2 = rng.gen_range(1..=remaining);
                                 let result = num1 + num2;
                                 (num1, num2, result)
                             } else {
@@ -211,8 +214,8 @@ async fn main() {
                         }
                         "-" => {
                             if difficulty == "easy" {
-                                let num1 = rng.gen_range(0..=max_num);
-                                let num2 = rng.gen_range(0..=num1);
+                                let num1 = rng.gen_range(2..=max_num);
+                                let num2 = rng.gen_range(1..=num1 - 1);
                                 let result = num1 - num2;
                                 (num1, num2, result)
                             } else {
