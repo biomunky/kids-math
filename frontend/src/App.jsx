@@ -35,7 +35,7 @@ function generateWebQuiz(username, difficulty) {
   const questions = []
   const seen = new Set()
   const configs = {
-    easy:   { operators: ['+', '-'],        maxNum: 20 },
+    easy:   { operators: ['+', '-'],        maxNum: 100 },
     medium: { operators: ['+', '-', '*'],   maxNum: 100 },
     hard:   { operators: ['+', '-', '*', '/'], maxNum: 1000 },
   }
@@ -46,12 +46,17 @@ function generateWebQuiz(username, difficulty) {
     let n1, n2
 
     if (op === '+') {
-      n1 = Math.floor(Math.random() * (maxNum + 1))
-      n2 = Math.floor(Math.random() * (maxNum - n1 + 1))
+      if (difficulty === 'easy') {
+        n1 = Math.floor(Math.random() * (maxNum - 1)) + 1
+        n2 = Math.floor(Math.random() * (maxNum - n1)) + 1
+      } else {
+        n1 = Math.floor(Math.random() * (maxNum + 1))
+        n2 = Math.floor(Math.random() * (maxNum - n1 + 1))
+      }
     } else if (op === '-') {
       if (difficulty === 'easy') {
-        n1 = Math.floor(Math.random() * (maxNum + 1))
-        n2 = Math.floor(Math.random() * (n1 + 1))
+        n1 = Math.floor(Math.random() * (maxNum - 1)) + 2
+        n2 = Math.floor(Math.random() * (n1 - 1)) + 1
       } else {
         const result = Math.floor(Math.random() * (maxNum + 1))
         n2 = Math.floor(Math.random() * (maxNum + 1))
